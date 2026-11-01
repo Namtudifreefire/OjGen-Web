@@ -4,6 +4,25 @@
 
 OjGen Web được xây dựng bằng React 19, TypeScript, Vite và Tailwind CSS. Ứng dụng cung cấp các khuôn sinh input, bộ giải tham chiếu tích hợp cho từng khuôn, công cụ quản lý test và xuất gói ZIP.
 
+## Tác giả và nguồn
+
+- **Tác giả / duy trì:** [Namtudifreefire](https://github.com/Namtudifreefire)
+- **Mã nguồn OjGen Web:** [github.com/Namtudifreefire/OjGen-Web](https://github.com/Namtudifreefire/OjGen-Web)
+- **Bản GUI/CLI liên quan:** [github.com/Namtudifreefire/OjGen-New](https://github.com/Namtudifreefire/OjGen-New)
+
+Danh mục chủ đề thuật toán tham khảo các nguồn sau:
+
+| Nguồn | Trang |
+|---|---|
+| VNOI | [vnoi.info](https://vnoi.info/) |
+| Codeforces | [codeforces.com](https://codeforces.com/) |
+| QBOJ | [qboj.zapto.org](http://qboj.zapto.org/) |
+| LQDOJ | [lqdoj.edu.vn](https://lqdoj.edu.vn/) |
+| LTOJ | [ltoj.edu.vn](https://ltoj.edu.vn/) |
+| DMOJ | [dmoj.ca](https://dmoj.ca/) |
+
+OjGen dùng tên chủ đề và liên kết tham khảo để gợi ý khuôn input; ứng dụng không sao chép toàn văn đề bài từ các nền tảng này. Nội dung và thương hiệu của từng nền tảng thuộc về chủ sở hữu tương ứng.
+
 ## Tính năng
 
 ### 19 khuôn sinh dữ liệu
