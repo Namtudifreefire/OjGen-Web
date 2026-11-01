@@ -88,6 +88,18 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
     setSelectedCategory(currentProblem.mainCategory);
   }, [currentProblem]);
 
+  useEffect(() => {
+    if (previousProblemIdRef.current === currentProblem.id) return;
+
+    previousProblemIdRef.current = currentProblem.id;
+    runIdRef.current += 1;
+    cancelRef.current = true;
+    setIsRunning(false);
+    setProgress(0);
+    setGenerationSummary(null);
+    setSamplePreview('');
+  }, [currentProblem.id]);
+
   // Generate Sample Preview
   const handlePreview = () => {
     try {
@@ -116,6 +128,8 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
   };
 
   const cancelRef = React.useRef(false);
+  const runIdRef = React.useRef(0);
+  const previousProblemIdRef = React.useRef(currentProblem.id);
   const isMountedRef = React.useRef(false);
 
   // Sync running state to parent
@@ -143,6 +157,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
     }
 
     cancelRef.current = false;
+    const runId = ++runIdRef.current;
     setIsRunning(true);
     setProgress(0);
     setGenerationSummary(null);
@@ -159,7 +174,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
 
       // Add manual / sample tests first
       for (const mt of manualTests) {
-        if (cancelRef.current) break;
+        if (cancelRef.current || runId !== runIdRef.current) break;
         const out = mt.output || currentProblem.solve(mt.input, config);
         tests.push({
           index: testIdx++,
@@ -176,12 +191,12 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
       // Generate group tests or default tests
       if (groups.length > 0) {
         for (const group of groups) {
-          if (cancelRef.current) break;
+          if (cancelRef.current || runId !== runIdRef.current) break;
           const gCfg = group.cfg || config;
           const gSeed = group.seed ? BigInt(group.seed) : baseRng.next();
           const gRng = new Rng(gSeed);
           for (let i = 0; i < group.testCount; i++) {
-            if (cancelRef.current) break;
+            if (cancelRef.current || runId !== runIdRef.current) break;
             const inp = currentProblem.generate(gRng, gCfg);
             const out = currentProblem.solve(inp, gCfg);
             tests.push({
@@ -202,7 +217,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
         }
       } else {
         for (let i = 0; i < testCount; i++) {
-          if (cancelRef.current) break;
+          if (cancelRef.current || runId !== runIdRef.current) break;
           const tSeed = baseRng.next();
           const tRng = new Rng(tSeed);
           const inp = currentProblem.generate(tRng, config);
@@ -224,6 +239,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
         }
       }
 
+      if (runId !== runIdRef.current) return;
       if (cancelRef.current) {
         onAddLog(`Đã dừng tạo test. Đã sinh ${tests.length} test trước khi hủy.`, 'warn');
         if (tests.length > 0) setGeneratedTests(tests);
@@ -237,7 +253,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
       onAddLog(summaryMsg, 'success');
 
       // Auto trigger ZIP download if checked
-      if (createZip && tests.length > 0) {
+      if (runId === runIdRef.current && createZip && tests.length > 0) {
         try {
           const blob = await ProblemPackageExporter.createZip({
             format: 'OjGen',
@@ -247,17 +263,20 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
             seed: actualSeed,
             tests,
           });
+          if (runId !== runIdRef.current || cancelRef.current) return;
           ProblemPackageExporter.downloadBlob(blob, `${currentProblem.id}_tests.zip`);
           onAddLog(`Đã tải xuống file ${currentProblem.id}_tests.zip thành công!`, 'success');
         } catch (err: any) {
+          if (runId !== runIdRef.current) return;
           onAddLog(`Lỗi tạo file ZIP: ${err.message}`, 'error');
         }
       }
     } catch (err: any) {
+      if (runId !== runIdRef.current) return;
       onAddLog(`Lỗi tạo bộ test: ${err.message}`, 'error');
       alert(`Lỗi tạo bộ test: ${err.message}`);
     } finally {
-      setIsRunning(false);
+      if (runId === runIdRef.current) setIsRunning(false);
     }
   };
 

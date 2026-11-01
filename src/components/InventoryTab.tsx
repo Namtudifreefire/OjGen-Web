@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GeneratedTestCase, Problem } from '../core/types';
 import { Search, Download, Eye, Network, BarChart2, Grid } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface InventoryTabProps {
 export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('all');
-  const [selectedTest, setSelectedTest] = useState<GeneratedTestCase | null>(tests[0] || null);
+  const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(tests[0]?.index ?? null);
   const [viewMode, setViewMode] = useState<'text' | 'visualize'>('text');
 
   const groups = Array.from(new Set(tests.map((t) => t.groupName)));
@@ -24,18 +24,34 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
     return matchesGroup && matchesSearch;
   });
 
+  useEffect(() => {
+    setSelectedTestIndex(tests[0]?.index ?? null);
+    setSelectedGroup('all');
+    setSearchTerm('');
+    setViewMode('text');
+  }, [tests]);
+
+  const selectedTest = filteredTests.find((test) => test.index === selectedTestIndex) ?? filteredTests[0] ?? null;
+
   const exportCsv = () => {
-    const rows = ['index,file,group,bytes,tags'];
-    for (const t of tests) {
-      rows.push(`${t.index},${t.fileName},"${t.groupName}",${t.bytes},"${t.tags.join(';')}"`);
-    }
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const escapeCsv = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
+    const rows = [
+      ['index', 'file', 'group', 'bytes', 'tags'].map(escapeCsv).join(','),
+      ...tests.map((test) =>
+        [test.index, test.fileName, test.groupName, test.bytes, test.tags.join(';')].map(escapeCsv).join(',')
+      ),
+    ];
+    const blob = new Blob(['\uFEFF', rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${problem.id}_inventory.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${problem.id}_inventory.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    window.setTimeout(() => {
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    }, 100);
   };
 
   // Render SVG Graph Visualization
@@ -272,7 +288,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                 return (
                   <div
                     key={t.index}
-                    onClick={() => setSelectedTest(t)}
+                    onClick={() => setSelectedTestIndex(t.index)}
                     className={`p-2 rounded-lg cursor-pointer text-xs flex items-center justify-between border transition ${
                       isSelected
                         ? 'bg-blue-600/20 border-blue-500 text-blue-200'

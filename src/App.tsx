@@ -44,9 +44,9 @@ export function App() {
     timeLimitMs: 1000,
     memoryLimitMb: 256,
     description: 'Cho mảng gồm N số nguyên A1, A2, ..., AN. Hãy tính tổng tất cả các phần tử trong mảng.',
-    inputFormat: 'Dòng 1 ghi số nguyên N (1 ≤ N ≤ 10^5).\nDòng 2 ghi N số nguyên A1 ... AN.',
+    inputFormat: 'Dòng 1 ghi số nguyên N (1 ≤ N ≤ 10).\nDòng 2 ghi N số nguyên A1 ... AN (1 ≤ Ai ≤ 100).',
     outputFormat: 'In ra một số nguyên duy nhất là tổng các phần tử của mảng.',
-    constraints: '1 ≤ N ≤ 10^5\n|Ai| ≤ 10^9',
+    constraints: '1 ≤ N ≤ 10\n1 ≤ Ai ≤ 100',
     samples: [
       {
         input: '5\n1 2 3 4 5\n',
@@ -113,11 +113,17 @@ export function App() {
   };
 
   const handleSelectProblem = (prob: Problem) => {
+    if (prob.id === currentProblem.id) return;
+
     setCurrentProblem(prob);
-    const newCfg = prob.defaultConfig();
-    setConfig(newCfg);
+    setConfig(prob.defaultConfig());
     setGroups([]);
-    addLog(`Đã chuyển sang khuôn bài "${prob.title}" (${prob.id}).`, 'info');
+    setManualTests([]);
+    setGeneratedTests([]);
+    setCoverageReport(null);
+    setIsCoverageOpen(false);
+    addLog(`Đã chuyển sang khuôn bài "${prob.title}" (${prob.id}); các nhóm và test của khuôn cũ đã được xóa để tránh sai định dạng.`, 'warn');
+    showToast('Đã đổi khuôn bài', 'Nhóm test và test cũ đã được xóa vì có thể không tương thích với cấu trúc input mới.', 'warn', 5000);
   };
 
   // Open Coverage Analysis

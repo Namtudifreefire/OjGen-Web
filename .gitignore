@@ -19,3 +19,4 @@ ojgen_settings.ini
 .DS_Store
 Thumbs.db
 Desktop.ini
+dist/

@@ -30,7 +30,7 @@ export const HelpTab: React.FC = () => {
             • <strong>Bước 3: Chia nhóm test (Subtasks).</strong> Dùng tính năng "Nhóm test" để phân chia tối đa 100 nhóm có điểm số, điều kiện tiên quyết, nhãn độ phủ (small, boundary, stress, adversarial) hoặc tạo nhanh bằng nút "Adversarial Presets".
           </p>
           <p>
-            • <strong>Bước 4: Kiểm tra input mẫu và Tạo bộ test.</strong> Nhấn "Kiểm tra input mẫu" để xem trước 1 test được sinh. Sau đó nhấn "▶ Tạo bộ test" để sinh toàn bộ các test và tự động xuất file ZIP.
+            • <strong>Bước 4: Kiểm tra input mẫu và Tạo bộ test.</strong> Nhấn "Kiểm tra input mẫu" để xem trước 1 test được sinh. Sau đó nhấn "▶ Tạo bộ test" để sinh test; ZIP chỉ tự tải nếu bật tùy chọn "Tự động nén và tải ZIP sau khi tạo".
           </p>
         </div>
       </section>
@@ -86,7 +86,7 @@ export const HelpTab: React.FC = () => {
           <CheckSquare className="w-4 h-4" /> 3. Kiểm thử đối chiếu &amp; Shrinker cấu trúc
         </h2>
         <p className="text-xs text-slate-300 leading-relaxed">
-          Khi hai lời giải cho kết quả khác nhau trên một test ngẫu nhiên, thuật toán <strong>Shrinker</strong> của OjGen tự động giảm số lượng phần tử của mảng, cắt tỉa cạnh đồ thị hoặc giảm biên độ các số nguyên về 0 trong khi vẫn đảm bảo test con vẫn khiến lời giải ứng viên thất bại. Điều này giúp tác giả ra đề hoặc thí sinh nhanh chóng tìm ra lỗi mà không phải debug trên test hàng ngàn dòng!
+          Shrinker hiện là heuristic cơ bản cho input mảng hai dòng: thử bỏ bớt phần tử và giảm giá trị số về 0, tối đa 64 lượt thử. Nó chưa thu nhỏ cấu trúc graph, tree, grid hoặc truy vấn. Hãy chạy lại phản ví dụ đã thu nhỏ để xác nhận lỗi vẫn còn.
         </p>
       </section>
 
@@ -96,7 +96,7 @@ export const HelpTab: React.FC = () => {
           <Terminal className="w-4 h-4" /> 4. Đóng gói chuẩn Kattis PPF và OjGen
         </h2>
         <p className="text-xs text-slate-300 leading-relaxed">
-          OjGen Web hỗ trợ đóng gói đầy đủ dữ liệu test, đáp án chuẩn, đề bài Markdown, mã kiểm tra toàn vẹn SHA-256 (<code>PACKAGE_SHA256SUMS.txt</code>), bảng kiểm kê test (<code>inventory.csv</code>) và cấu trúc thư mục <code>data/sample</code> và <code>data/secret</code> tương thích với hệ thống chấm quốc tế Kattis và DOMjudge.
+          Gói OjGen Standard chứa dữ liệu input/output, <code>PACKAGE_SHA256SUMS.txt</code>, <code>inventory.csv</code>, <code>provenance.json</code> và đề Markdown nếu có. Gói Kattis tạo <code>problem.yaml</code>, <code>data/sample</code>, <code>data/secret</code> và đề tiếng Việt nếu có; gói này hiện không kèm checksum hoặc inventory. Hãy kiểm tra lại cấu trúc và metadata theo yêu cầu của hệ thống chấm đích trước khi nộp.
         </p>
       </section>
 
