@@ -1,0 +1,9 @@
+{
+  "name": "OjGen Web - Online Judge Testcase Generator & Authoring Suite",
+  "description": "Bộ công cụ tạo test, kiểm định và đóng gói bài tập lập trình thi đấu (Competitive Programming Testcase Generator & Problem Authoring Suite)",
+  "version": "3.3.0",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='2' y='3' width='20' height='14' rx='2'/><line x1='8' y1='21' x2='16' y2='21'/><line x1='12' y1='17' x2='12' y2='21'/></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        try {
+          var origFetch = window.fetch;
+          var activeFetch = origFetch ? origFetch.bind(window) : undefined;
+          var descriptor = {
+            get: function() { return activeFetch; },
+            set: function(v) { activeFetch = v; },
+            configurable: true,
+            enumerable: true
+          };
+          Object.defineProperty(window, 'fetch', descriptor);
+          if (typeof Window !== 'undefined' && Window.prototype) {
+            try { Object.defineProperty(Window.prototype, 'fetch', descriptor); } catch (_) {}
+          }
+        } catch (_) {}
+      })();
+    </script>
+    <title>OjGen Web - Online Judge Testcase Generator & Authoring Suite</title>
+    <meta name="description" content="Bộ công cụ tạo test, kiểm định và đóng gói bài tập lập trình thi đấu (Competitive Programming Testcase Generator & Problem Authoring Suite)" />
+    <meta property="og:title" content="OjGen Web - Online Judge Testcase Generator & Authoring Suite" />
+    <meta property="og:description" content="Bộ công cụ tạo test, kiểm định và đóng gói bài tập lập trình thi đấu (Competitive Programming Testcase Generator & Problem Authoring Suite)" />
+  </head>
+  <body class="bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
