@@ -4,6 +4,8 @@
 
 OjGen Web được xây dựng bằng React 19, TypeScript, Vite và Tailwind CSS. Ứng dụng cung cấp các khuôn sinh input, bộ giải tham chiếu tích hợp cho từng khuôn, công cụ quản lý test và xuất gói ZIP.
 
+🌐 **Dùng thử trực tuyến:** [OjGen Web](https://ojgen-web.pages.dev)
+
 ## Tác giả và nguồn
 
 - **Tác giả / duy trì:** [Namtudifreefire](https://github.com/Namtudifreefire)
