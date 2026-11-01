@@ -643,7 +643,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
               title="Nhấn để bắt đầu tạo bộ test (Phím tắt: Ctrl+G)"
             >
               <Play className="w-4 h-4 fill-white" />
-              <span>{isRunning ? 'Đang tạo bộ test...' : '▶ Tạo bộ test'}</span>
+              <span>{isRunning ? 'Đang tạo bộ test...' : 'Tạo bộ test'}</span>
               <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-blue-700/80 border border-blue-400/30 text-[10px] font-mono text-blue-100 shadow-sm ml-1">
                 Ctrl+G
               </kbd>
@@ -661,12 +661,21 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-slate-950 rounded-full h-2 mt-3 overflow-hidden border border-slate-800">
+          {(isRunning || generationSummary) && (
             <div
-              className="bg-blue-500 h-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+              className="w-full bg-slate-950 rounded-full h-2 mt-3 overflow-hidden border border-slate-800"
+              role="progressbar"
+              aria-label="Tiến độ tạo bộ test"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progress}
+            >
+              <div
+                className="bg-blue-500 h-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          )}
 
           {/* Result Panel */}
           {generationSummary && (
