@@ -1,56 +1,85 @@
-# OjGen 3.3.0 Web — Trình tạo test cho lập trình thi đấu (Online Judge Testcase Generator & Authoring Suite)
+# OjGen Web 3.3.0
 
-OjGen 3.3.0 Web là phiên bản web hiện đại hóa của công cụ tạo bộ test và quản lý đề bài lập trình thi đấu, được viết lại hoàn toàn bằng **React 19 + TypeScript + Vite + Tailwind CSS**.
+**Trình tạo và kiểm định bộ test cho lập trình thi đấu**, chạy trực tiếp trong trình duyệt.
 
-Ứng dụng hỗ trợ sinh dữ liệu kiểm thử, chạy lời giải chuẩn tự động, quản lý nhóm test (Subtasks), kiểm định tính hợp lệ, đối chiếu lời giải, rút gọn phản ví dụ (Shrinker), soạn thảo đề bài chuẩn và đóng gói phát hành theo quy chuẩn quốc tế.
+OjGen Web được xây dựng bằng React 19, TypeScript, Vite và Tailwind CSS. Ứng dụng cung cấp các khuôn sinh input, bộ giải tham chiếu tích hợp cho từng khuôn, công cụ quản lý test và xuất gói ZIP.
 
----
+## Tính năng
 
-## 1. Tính năng chính
+### 19 khuôn sinh dữ liệu
 
-- **Bộ sinh số ngẫu nhiên 64-bit Mersenne Twister (MT19937-64):** Cài đặt bit-for-bit nguyên bản, đảm bảo cùng một `seed` và cấu hình sẽ tái lập chính xác từng byte dữ liệu kiểm thử.
-- **19 Cấu trúc input toàn diện:**
-  1. `single_n`: Số nguyên đơn lẻ N
-  2. `two_ints`: Hai số nguyên A B (tùy chọn A ≤ B, A < B, khác nhau)
-  3. `array`: Mảng một chiều, hoán vị 1..N, sắp xếp không giảm/không tăng, phần tử phân biệt
-  4. `queries`: Mảng kết hợp truy vấn cập nhật điểm và hỏi đoạn
-  5. `prefix_sum_range`: Truy vấn tiền tố tổng đoạn (QBOJ sumarr)
-  6. `prefix_subsequence_range`: Truy vấn tổng dãy con (QBOJ TDC)
-  7. `string`: Xâu ký tự với đa dạng charset (lower, upper, letters, digits, alnum, binary, DNA, custom)
-  8. `matrix`: Ma trận số nguyên N×M hoặc hai mảng song song
-  9. `grid`: Lưới ký tự mê cung với tùy chọn đặt vị trí bắt đầu `S` và đích `T`
-  10. `pairs`: Danh sách cặp số hoặc đoạn `[l, r]`
-  11. `graph`: Đồ thị đơn/đa đồ thị, có hướng/vô hướng, liên thông, liên thông mạnh, DAG, đồ thị 2 phía, có trọng số
-  12. `tree`: Cây ngẫu nhiên, đường thẳng, hình sao, cây nhị phân (danh sách cạnh hoặc danh sách cha)
-  13. `multi_test`: Nhiều bộ test con (mỗi bộ là mảng số hoặc xâu)
-  14. `custom`: Dãy số theo giới hạn chung hoặc riêng từng vị trí `lo1:hi1,lo2:hi2,...`
-  15. `chess_moves`: Đếm nước đi của quân Mã trên bàn cờ 8×8
-  16. `chess_piece_moves`: Đếm nước đi của Mã, Vua, Xe, Tượng, Hậu
-  17. `chess_knight_targets`: Liệt kê tọa độ các ô đích quân Mã có thể đi
-  18. `chess_knight_reachability`: Kiểm tra Mã đi tới đích trong đúng 1 nước (YES/NO)
-  19. `chess_knight_shortest`: Tìm đường đi ngắn nhất của quân Mã (BFS)
-- **Danh mục chủ đề thuật toán:** Tích hợp hơn 150 tag phân loại từ VNOI, Codeforces, QBOJ, LQDOJ, LTOJ và DMOJ với liên kết tra cứu và gợi ý khuôn input tương ứng.
-- **Kế hoạch nhóm test (Subtasks) & Điểm số:** Chia bộ test thành các nhóm có điểm số (tổng 100), điều kiện phụ thuộc (prerequisites), ghi đè tham số và nhãn độ phủ (`small`, `boundary`, `stress`, `adversarial`). Nút tạo nhanh **Adversarial Presets** tự động sinh các biên cực trị và bẫy góc.
-- **Kiểm thử đối chiếu & Shrinker cấu trúc:** So sánh lời giải chuẩn và lời giải ứng viên. Khi phát hiện sai khác, thuật toán Shrinker tự động thu nhỏ mảng, cắt tỉa cạnh đồ thị hoặc giảm số về 0 để tạo ra phản ví dụ tối giản nhất phục vụ việc debug.
-- **Soạn thảo đề bài (Problem Statement):** Soạn thảo đề bằng Markdown, kiểm tra tính nhất quán giữa ràng buộc trong đề và tham số generator, xem trước đề bài trực tiếp.
-- **Kiểm kê & Trực quan hóa test:** Tìm kiếm, phân loại theo nhóm, hiển thị biểu đồ đồ thị/cây bằng SVG, lưới 2D màu và biểu đồ phân phối tần số giá trị (histogram). Xuất bảng kiểm kê CSV.
-- **Đóng gói phát hành (Packaging):** Hỗ trợ đóng gói ZIP theo chuẩn **OjGen Standard** (kèm `PACKAGE_SHA256SUMS.txt`, `inventory.csv`, `provenance.json`) và chuẩn **Kattis / ICPC Problem Package Format** (`data/sample`, `data/secret`, `problem.yaml`).
-- **Khung mã nguồn (Scaffolds):** Tạo sẵn template validator và checker bằng C++ (Standalone / Testlib) và Python.
-- **Dự án di động (.ojproject):** Lưu và mở toàn bộ workspace đề bài dưới dạng file JSON.
+| Khuôn | Dữ liệu |
+|---|---|
+| `single_n` | Một số nguyên `N` |
+| `two_ints` | Cặp số nguyên, có thể ràng buộc thứ tự hoặc khác nhau |
+| `array` | Mảng, hoán vị, tăng/giảm hoặc phần tử phân biệt |
+| `queries` | Mảng và truy vấn cập nhật/truy vấn đoạn |
+| `prefix_sum_range` | Truy vấn tổng đoạn theo khuôn QBOJ `sumarr` |
+| `prefix_subsequence_range` | Truy vấn tổng dãy con theo khuôn QBOJ TDC |
+| `string` | Xâu với charset chữ, số, nhị phân, DNA hoặc tự chọn |
+| `matrix` | Ma trận số nguyên hoặc hai mảng song song |
+| `grid` | Lưới ký tự, tùy chọn điểm đầu `S` và đích `T` |
+| `pairs` | Danh sách cặp số hoặc đoạn `[l, r]` |
+| `graph` | Đồ thị có hướng/vô hướng, đơn, liên thông, DAG, hai phía hoặc có trọng số |
+| `tree` | Cây ngẫu nhiên, đường thẳng, hình sao hoặc nhị phân |
+| `multi_test` | Nhiều bộ test con dạng mảng hoặc xâu |
+| `custom` | Các số theo giới hạn chung hoặc giới hạn riêng từng vị trí |
+| `chess_moves` | Đếm nước đi của quân Mã trên bàn cờ `8×8` |
+| `chess_piece_moves` | Đếm nước đi của Mã, Vua, Xe, Tượng hoặc Hậu |
+| `chess_knight_targets` | Liệt kê ô mà quân Mã có thể đi tới |
+| `chess_knight_reachability` | Kiểm tra Mã tới đích trong một nước |
+| `chess_knight_shortest` | Tìm đường đi ngắn nhất của Mã bằng BFS |
 
----
+Bộ sinh dùng MT19937-64. Cùng seed và cấu hình sẽ tái lập chuỗi input. Mỗi khuôn có bộ giải tham chiếu viết bằng TypeScript để tạo output mẫu.
 
-## 2. Cài đặt và Khởi chạy
+### Lập kế hoạch và kiểm tra
+
+- Chia test thành nhóm với số lượng, seed, cấu hình, nhãn độ phủ, điểm và điều kiện tiên quyết.
+- Tạo nhanh nhóm cấu hình biên nhỏ/lớn, mảng có giá trị trùng và đồ thị liên thông mạnh khi khuôn hỗ trợ.
+- Phân tích độ phủ theo các tham số mà OjGen nhận diện trong input; kết quả là gợi ý heuristic.
+- Đối chiếu bộ giải tham chiếu với các mẫu lời giải ứng viên; có thể nhập hàm ứng viên JavaScript và thu nhỏ phản ví dụ cho input mảng đơn giản.
+- Soạn statement qua các trường mô tả, input, output, ràng buộc và sample; xem trước, kiểm tra input mẫu và một số cận `N` cơ bản.
+- Tạo scaffold ban đầu cho validator/checker bằng C++ hoặc Python, gồm một số mẫu C++ Testlib và so sánh số thực.
+
+### Kiểm kê và đóng gói
+
+- Tìm test theo tên hoặc nhãn, lọc theo nhóm, xem input/output và xuất inventory CSV.
+- Trực quan đồ thị/cây bằng SVG, lưới và histogram cho mảng hoặc truy vấn tổng tiền tố.
+- Xuất OjGen ZIP gồm `tests/*.inp`, `tests/*.out`, `PACKAGE_SHA256SUMS.txt`, `inventory.csv` và `provenance.json`; có thể kèm statement.
+- Xuất gói Kattis dạng cơ bản gồm `problem.yaml`, test trong `data/sample`/`data/secret` và statement nếu đã soạn.
+- Xuất/nhập dự án `.ojproject` dạng JSON để lưu thông tin bài, cấu hình, seed, test tay/sample và statement.
+
+### Chủ đề thuật toán
+
+Hiện có **40 mục gợi ý** từ VNOI, Codeforces, QBOJ, LQDOJ, LTOJ, DMOJ và các chủ đề nội bộ OjGen. Mỗi mục gợi ý khuôn dữ liệu gần nhất; cần xem đề và ràng buộc trước khi dùng.
+
+## Bắt đầu
+
+Cần cài Node.js và npm. Chạy các lệnh từ thư mục dự án:
 
 ```bash
-# Cài đặt dependencies
 npm install
-
-# Khởi chạy máy chủ phát triển
 npm run dev
-
-# Biên dịch sản phẩm
-npm run build
 ```
 
-Dev server chạy tại cổng `3000` (`http://localhost:3000`).
+Vite dev server chạy tại [http://localhost:3000](http://localhost:3000).
+
+Các lệnh khác:
+
+```bash
+npm run lint     # Kiểm tra TypeScript
+npm run build    # Kiểm tra TypeScript và build bản production
+npm run preview  # Xem thử bản build tại cổng 3000
+```
+
+## Giới hạn hiện tại
+
+- Đây là ứng dụng phía trình duyệt, không có backend để biên dịch/chạy lời giải native C++, Python, Java hoặc thực thi validator/checker bên ngoài. Output được tạo bởi bộ giải tham chiếu tích hợp.
+- Hàm ứng viên tùy chỉnh trong kiểm thử đối chiếu là JavaScript chạy trong trang hiện tại; chỉ nhập mã bạn tin cậy.
+- Shrinker hiện là heuristic cho input mảng hai dòng, tối đa 64 lần thử; chưa thu nhỏ cấu trúc cây, đồ thị, lưới hay truy vấn.
+- Nhập `.ojproject` hiện chưa khôi phục danh sách nhóm test đã lưu; hãy kiểm tra lại kế hoạch nhóm sau khi mở dự án.
+- Gói Kattis dùng định dạng `2025-09` release candidate và chỉ xuất metadata, statement, sample/secret. Hãy kiểm tra gói với judge đích; ứng dụng chưa thêm lời giải, validator hoặc checker vào gói này.
+- Các scaffold validator/checker là mã khởi đầu, cần hoàn thiện và chạy kiểm tra riêng trước khi dùng cho bài thật.
+
+Seed, cấu hình và dữ liệu đang làm việc được giữ trong trạng thái của tab trình duyệt. Hãy tải file `.ojproject` và ZIP cần thiết trước khi đóng hoặc tải lại trang.
+
