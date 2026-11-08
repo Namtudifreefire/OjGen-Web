@@ -17,10 +17,12 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
   );
   const [result, setResult] = useState<DifferentialResult | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [codeError, setCodeError] = useState<string | null>(null);
 
   const runTest = () => {
     setIsRunning(true);
     setResult(null);
+    setCodeError(null);
 
     setTimeout(() => {
       let candidateFn: (input: string) => string;
@@ -58,7 +60,7 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
           const userFn = new Function('input', `${customCode}\nreturn solve(input);`);
           candidateFn = (input: string) => String(userFn(input));
         } catch (err: any) {
-          alert(`Lỗi cú pháp mã nguồn ứng viên: ${err.message}`);
+          setCodeError(`Lỗi cú pháp mã nguồn: ${err.message}`);
           setIsRunning(false);
           return;
         }
@@ -76,8 +78,8 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
       <div className="flex items-center justify-between pb-3 border-b border-slate-800">
         <div>
           <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <RotateCcw className="w-4 h-4 text-blue-400" />
-            <span>⚖ Kiểm thử đối chiếu &amp; Thu nhỏ phản ví dụ (Shrinker)</span>
+            <RotateCcw className="w-4 h-4 text-slate-400" />
+            <span>Kiểm thử đối chiếu &amp; Thu nhỏ phản ví dụ (Shrinker)</span>
           </h2>
           <p className="text-xs text-slate-400">
             Chạy đối chiếu lời giải chuẩn với lời giải cần thử trên các test ngẫu nhiên, tự động rút gọn input gây lỗi
@@ -139,6 +141,13 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
             />
             <span>Tự động thu nhỏ phản ví dụ (Shrinker kích thước/giá trị)</span>
           </label>
+
+          {codeError && (
+            <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{codeError}</span>
+            </div>
+          )}
 
           <button
             onClick={runTest}

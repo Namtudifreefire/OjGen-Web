@@ -30,7 +30,7 @@ export const HelpTab: React.FC = () => {
             • <strong>Bước 3: Chia nhóm test (Subtasks).</strong> Dùng tính năng "Nhóm test" để phân chia tối đa 100 nhóm có điểm số, điều kiện tiên quyết, nhãn độ phủ (small, boundary, stress, adversarial) hoặc tạo nhanh bằng nút "Adversarial Presets".
           </p>
           <p>
-            • <strong>Bước 4: Kiểm tra input mẫu và Tạo bộ test.</strong> Nhấn "Kiểm tra input mẫu" để xem trước 1 test được sinh. Sau đó nhấn "▶ Tạo bộ test" để sinh test; ZIP chỉ tự tải nếu bật tùy chọn "Tự động nén và tải ZIP sau khi tạo".
+            • <strong>Bước 4: Kiểm tra input mẫu và Tạo bộ test.</strong> Nhấn "Xem thử mẫu" để xem trước 1 test được sinh. Sau đó nhấn "Tạo bộ test" (hoặc Ctrl+G) để sinh test; ZIP chỉ tự tải nếu bật tùy chọn "Tự động nén và tải ZIP sau khi tạo".
           </p>
         </div>
       </section>

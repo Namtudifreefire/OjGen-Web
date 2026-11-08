@@ -1,5 +1,5 @@
-import React from 'react';
-import { Trash2, Copy, Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { Trash2, Copy, Check, Download, Terminal } from 'lucide-react';
 
 export interface LogEntry {
   id: string;
@@ -14,10 +14,13 @@ interface LogTabProps {
 }
 
 export const LogTab: React.FC<LogTabProps> = ({ logs, onClearLogs }) => {
+  const [copied, setCopied] = useState(false);
+
   const handleCopy = () => {
     const text = logs.map(l => `[${l.timestamp}] [${l.level.toUpperCase()}] ${l.message}`).join('\n');
-    navigator.clipboard.writeText(text);
-    alert('Đã sao chép toàn bộ nhật ký!');
+    navigator.clipboard?.writeText(text).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
@@ -36,7 +39,8 @@ export const LogTab: React.FC<LogTabProps> = ({ logs, onClearLogs }) => {
       {/* Action Bar */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-slate-100">📋 Nhật ký hoạt động</span>
+          <Terminal className="w-4 h-4 text-slate-400" />
+          <span className="font-semibold text-sm text-slate-100">Nhật ký hoạt động</span>
           <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
             Ctrl+L
           </kbd>
@@ -57,8 +61,8 @@ export const LogTab: React.FC<LogTabProps> = ({ logs, onClearLogs }) => {
             onClick={handleCopy}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
           >
-            <Copy className="w-3.5 h-3.5" />
-            <span>Sao chép</span>
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+            <span>{copied ? 'Đã sao chép' : 'Sao chép'}</span>
           </button>
           <button
             onClick={handleDownload}

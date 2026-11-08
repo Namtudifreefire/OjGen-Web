@@ -27,11 +27,13 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   const [format, setFormat] = useState<'OjGen' | 'Kattis'>('OjGen');
   const [packageName, setPackageName] = useState<string>(statement.code || problem.id);
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleExport = async () => {
     setIsExporting(true);
+    setExportError(null);
     try {
       const blob = await ProblemPackageExporter.createZip({
         format,
@@ -49,7 +51,8 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       setIsExporting(false);
       onClose();
     } catch (err: any) {
-      alert(`Lỗi đóng gói: ${err.message}`);
+      setExportError(`Lỗi đóng gói: ${err.message}`);
+      onAddLog(`Lỗi đóng gói: ${err.message}`, 'error');
       setIsExporting(false);
     }
   };
@@ -123,6 +126,12 @@ export const PackageModal: React.FC<PackageModalProps> = ({
               <span className="text-emerald-400 font-medium">SHA-256 (Mỗi test)</span>
             </div>
           </div>
+
+          {exportError && (
+            <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+              {exportError}
+            </div>
+          )}
         </div>
 
         <div className="p-3 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">

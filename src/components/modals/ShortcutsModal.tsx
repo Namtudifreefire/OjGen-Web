@@ -19,19 +19,19 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         {
           keys: [`${modKey}`, 'S'],
           description: 'Lưu toàn bộ dự án hiện tại ra tệp .ojproject.json',
-          icon: <Save className="w-4 h-4 text-emerald-400" />,
+          icon: <Save className="w-4 h-4 text-slate-300" />,
           highlight: true,
         },
         {
           keys: [`${modKey}`, 'G'],
-          description: 'Bắt đầu sinh bộ test (tự động chuyển tab và kích hoạt quá trình tạo)',
-          icon: <Play className="w-4 h-4 text-blue-400 fill-blue-400/30" />,
+          description: 'Bắt đầu sinh bộ test (tự động kích hoạt quá trình tạo)',
+          icon: <Play className="w-4 h-4 text-slate-300" />,
           highlight: true,
         },
         {
           keys: [`${modKey}`, 'L'],
           description: 'Chuyển nhanh sang tab Nhật ký (xem log thực thi & kết quả)',
-          icon: <FileText className="w-4 h-4 text-amber-400" />,
+          icon: <FileText className="w-4 h-4 text-slate-300" />,
           highlight: true,
         },
       ],
@@ -42,22 +42,22 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         {
           keys: [`${modKey}`, 'O'],
           description: 'Mở tệp dự án OjGen (.ojproject.json)',
-          icon: <Layers className="w-4 h-4 text-purple-400" />,
+          icon: <Layers className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, 'P'],
           description: 'Mở kế hoạch phân nhóm test / Subtasks',
-          icon: <Layers className="w-4 h-4 text-indigo-400" />,
+          icon: <Layers className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, 'B'],
           description: 'Mở hộp thoại đóng gói bài tập (ZIP / Kattis)',
-          icon: <Package className="w-4 h-4 text-amber-400" />,
+          icon: <Package className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, 'M'],
           description: 'Mở ma trận kiểm thử nhiều lời giải (Solution Matrix)',
-          icon: <Sparkles className="w-4 h-4 text-pink-400" />,
+          icon: <Sparkles className="w-4 h-4 text-slate-400" />,
         },
       ],
     },
@@ -67,23 +67,23 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         {
           keys: [`${modKey}`, 'I'],
           description: 'Chuyển nhanh sang tab Kiểm kê bài test (Inventory)',
-          icon: <ListFilter className="w-4 h-4 text-sky-400" />,
+          icon: <ListFilter className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, 'D'],
           description: 'Chuyển nhanh sang tab Đối chiếu & Thu nhỏ test (Differential)',
-          icon: <RotateCcw className="w-4 h-4 text-orange-400" />,
+          icon: <RotateCcw className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, '/'],
           altKeys: ['?'],
           description: 'Mở / Đóng bảng danh sách phím tắt này',
-          icon: <Keyboard className="w-4 h-4 text-cyan-400" />,
+          icon: <Keyboard className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: ['Esc'],
           description: 'Đóng hộp thoại đang mở hoặc hủy tác vụ',
-          icon: <X className="w-4 h-4 text-rose-400" />,
+          icon: <X className="w-4 h-4 text-slate-400" />,
         },
       ],
     },
@@ -91,17 +91,17 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30">
-              <Keyboard className="w-5 h-5" />
+            <div className="p-2 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">
+              <Keyboard className="w-4 h-4" />
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
                 Phím tắt bàn phím OjGen
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
                   Global Shortcuts
                 </span>
               </h2>
@@ -115,7 +115,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
             title="Đóng (Esc)"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -130,14 +130,14 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
                 {group.items.map((item, iIdx) => (
                   <div
                     key={iIdx}
-                    className={`flex items-center justify-between p-2.5 rounded-xl border transition ${
+                    className={`flex items-center justify-between p-2.5 rounded-lg border transition ${
                       item.highlight
-                        ? 'bg-blue-950/20 border-blue-500/30 hover:bg-blue-950/40'
-                        : 'bg-slate-950/50 border-slate-800/80 hover:bg-slate-800/40'
+                        ? 'bg-slate-800/60 border-slate-700 hover:bg-slate-800'
+                        : 'bg-slate-950/50 border-slate-800 hover:bg-slate-800/40'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 flex-shrink-0">
+                      <div className="p-1.5 rounded-md bg-slate-900 border border-slate-800 flex-shrink-0">
                         {item.icon}
                       </div>
                       <span className="text-xs text-slate-200">{item.description}</span>

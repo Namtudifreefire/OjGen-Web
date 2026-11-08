@@ -18,6 +18,15 @@ import { QueueModal } from './components/modals/QueueModal';
 import { CoverageModal } from './components/modals/CoverageModal';
 import { ShortcutsModal } from './components/modals/ShortcutsModal';
 import { ToastContainer, ToastMessage } from './components/Toast';
+import {
+  SlidersHorizontal,
+  Terminal,
+  Layers,
+  FileText,
+  Scale,
+  Code2,
+  HelpCircle,
+} from 'lucide-react';
 
 import { ALL_PROBLEMS, findProblem } from './core/problems/allProblems';
 import { Problem, Config, TestGroupSpec, ManualTestCase, GeneratedTestCase, ProblemStatement } from './core/types';
@@ -155,7 +164,12 @@ export function App() {
       }
     }
     addLog(`Selftest hoàn tất: ${passed}/${ALL_PROBLEMS.length} khuôn bài toán vượt qua kiểm thử!`, 'success');
-    alert(`Selftest thành công: ${passed}/${ALL_PROBLEMS.length} module sinh test, kiểm định và giải tự động hoạt động chính xác!`);
+    showToast(
+      'Selftest hoàn tất',
+      `${passed}/${ALL_PROBLEMS.length} module sinh test, kiểm định và giải tự động hoạt động chính xác.`,
+      'success',
+      4000
+    );
   };
 
   // Save Project as JSON
@@ -180,6 +194,7 @@ export function App() {
     a.click();
     URL.revokeObjectURL(url);
     addLog(`Đã lưu dự án "${a.download}" thành công.`, 'success');
+    showToast('Đã lưu dự án', a.download, 'success');
   };
 
   // Open Project JSON file
@@ -204,10 +219,12 @@ export function App() {
               if (data.statement) setStatement(data.statement);
               if (data.manualTests) setManualTests(data.manualTests);
               addLog(`Đã nạp dự án "${file.name}" thành công!`, 'success');
+              showToast('Đã mở dự án', file.name, 'success');
             }
           }
         } catch (err: any) {
-          alert(`Không thể đọc file dự án: ${err.message}`);
+          addLog(`Không thể đọc file dự án: ${err.message}`, 'error');
+          showToast('Lỗi đọc tệp', err.message, 'error');
         }
       };
       reader.readAsText(file);
@@ -315,7 +332,7 @@ export function App() {
       if (key === 's') {
         e.preventDefault();
         handleSaveProject();
-        showToast('💾 Phím tắt: [Ctrl+S]', 'Đã lưu cấu hình dự án ra tệp .ojproject.json', 'success');
+        showToast('Phím tắt: [Ctrl+S]', 'Đã lưu cấu hình dự án ra tệp .ojproject.json', 'success');
         return;
       }
 
@@ -324,10 +341,10 @@ export function App() {
         e.preventDefault();
         setActiveTab('generator');
         if (isGenerating) {
-          showToast('⏳ Đang tạo bộ test', 'Quá trình sinh test hiện đang chạy...', 'warn');
+          showToast('Đang tạo bộ test', 'Quá trình sinh test hiện đang chạy...', 'warn');
         } else {
           setRunTriggerCount((c) => c + 1);
-          showToast('⚡ Phím tắt: [Ctrl+G]', 'Bắt đầu quá trình tạo bộ test tự động', 'info');
+          showToast('Phím tắt: [Ctrl+G]', 'Bắt đầu quá trình tạo bộ test tự động', 'info');
           addLog('Phím tắt [Ctrl+G]: Bắt đầu sinh bộ test...', 'info');
         }
         return;
@@ -337,7 +354,7 @@ export function App() {
       if (key === 'l') {
         e.preventDefault();
         setActiveTab('log');
-        showToast('📋 Phím tắt: [Ctrl+L]', 'Đã chuyển nhanh sang tab Nhật ký', 'info');
+        showToast('Phím tắt: [Ctrl+L]', 'Đã chuyển nhanh sang tab Nhật ký', 'info');
         return;
       }
 
@@ -345,7 +362,7 @@ export function App() {
       if (key === 'o') {
         e.preventDefault();
         handleOpenProject();
-        showToast('📂 Phím tắt: [Ctrl+O]', 'Mở tệp dự án .ojproject.json', 'info');
+        showToast('Phím tắt: [Ctrl+O]', 'Mở tệp dự án .ojproject.json', 'info');
         return;
       }
 
@@ -353,7 +370,7 @@ export function App() {
       if (key === 'p') {
         e.preventDefault();
         setIsPlanOpen(true);
-        showToast('📐 Phím tắt: [Ctrl+P]', 'Mở kế hoạch phân nhóm test / Subtasks', 'info');
+        showToast('Phím tắt: [Ctrl+P]', 'Mở kế hoạch phân nhóm test / Subtasks', 'info');
         return;
       }
 
@@ -361,7 +378,7 @@ export function App() {
       if (key === 'b') {
         e.preventDefault();
         setIsPackageOpen(true);
-        showToast('📦 Phím tắt: [Ctrl+B]', 'Mở đóng gói bài thi (ZIP / Kattis)', 'info');
+        showToast('Phím tắt: [Ctrl+B]', 'Mở đóng gói bài thi (ZIP / Kattis)', 'info');
         return;
       }
 
@@ -369,7 +386,7 @@ export function App() {
       if (key === 'i') {
         e.preventDefault();
         setActiveTab('inventory');
-        showToast('🧾 Phím tắt: [Ctrl+I]', 'Đã chuyển sang tab Kiểm kê bài test', 'info');
+        showToast('Phím tắt: [Ctrl+I]', 'Đã chuyển sang tab Kiểm kê bài test', 'info');
         return;
       }
 
@@ -377,7 +394,7 @@ export function App() {
       if (key === 'd') {
         e.preventDefault();
         setActiveTab('differential');
-        showToast('⚖️ Phím tắt: [Ctrl+D]', 'Đã chuyển sang tab Đối chiếu & Thu nhỏ lỗi', 'info');
+        showToast('Phím tắt: [Ctrl+D]', 'Đã chuyển sang tab Đối chiếu & Thu nhỏ lỗi', 'info');
         return;
       }
     };
@@ -425,33 +442,47 @@ export function App() {
       />
 
       {/* Tabs Navigation */}
-      <nav className="border-b border-slate-800 bg-slate-900/60 px-4 flex items-center gap-1 overflow-x-auto text-xs">
+      <nav className={`border-b px-3 flex items-center gap-1 overflow-x-auto text-xs select-none transition-colors ${
+        theme === 'dark' ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'
+      }`}>
         {[
-          { id: 'generator', label: '🧪 Tạo bộ test', shortcut: 'Ctrl+G' },
-          { id: 'log', label: '📋 Nhật ký', shortcut: 'Ctrl+L' },
-          { id: 'inventory', label: `🧾 Kiểm kê (${generatedTests.length})`, shortcut: 'Ctrl+I' },
-          { id: 'statement', label: '✍ Soạn đề bài' },
-          { id: 'differential', label: '⚖ Đối chiếu & Thu nhỏ', shortcut: 'Ctrl+D' },
-          { id: 'scaffolds', label: '🧰 Khung mã nguồn' },
-          { id: 'help', label: '📖 Hướng dẫn', shortcut: '?' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-2.5 font-medium border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === tab.id
-                ? 'border-blue-500 text-blue-400 bg-slate-800/40'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/20'
-            }`}
-          >
-            <span>{tab.label}</span>
-            {tab.shortcut && (
-              <kbd className="hidden md:inline-block px-1 py-0.2 rounded text-[9px] font-mono bg-slate-800 text-slate-400 border border-slate-700/80">
-                {tab.shortcut}
-              </kbd>
-            )}
-          </button>
-        ))}
+          { id: 'generator', label: 'Tạo test', icon: <SlidersHorizontal className="w-3.5 h-3.5" />, shortcut: 'Ctrl+G' },
+          { id: 'log', label: 'Nhật ký', icon: <Terminal className="w-3.5 h-3.5" />, shortcut: 'Ctrl+L' },
+          { id: 'inventory', label: `Kiểm kê (${generatedTests.length})`, icon: <Layers className="w-3.5 h-3.5" />, shortcut: 'Ctrl+I' },
+          { id: 'statement', label: 'Soạn đề bài', icon: <FileText className="w-3.5 h-3.5" /> },
+          { id: 'differential', label: 'Đối chiếu & Thu nhỏ', icon: <Scale className="w-3.5 h-3.5" />, shortcut: 'Ctrl+D' },
+          { id: 'scaffolds', label: 'Khung mã nguồn', icon: <Code2 className="w-3.5 h-3.5" /> },
+          { id: 'help', label: 'Hướng dẫn', icon: <HelpCircle className="w-3.5 h-3.5" />, shortcut: '?' },
+        ].map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3 py-2 font-medium border-b-2 transition whitespace-nowrap flex items-center gap-2 ${
+                isActive
+                  ? theme === 'dark'
+                    ? 'border-blue-500 text-slate-100 bg-slate-800/40'
+                    : 'border-blue-600 text-blue-700 bg-blue-50/60 font-semibold'
+                  : theme === 'dark'
+                    ? 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/20'
+                    : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/70'
+              }`}
+            >
+              <span className={isActive ? (theme === 'dark' ? 'text-blue-400' : 'text-blue-600') : 'text-slate-400'}>{tab.icon}</span>
+              <span>{tab.label}</span>
+              {tab.shortcut && (
+                <kbd className={`hidden md:inline-block px-1 py-0.2 rounded text-[9px] font-mono border ${
+                  theme === 'dark'
+                    ? 'text-slate-400 bg-slate-800/80 border-slate-700/60'
+                    : 'text-slate-500 bg-slate-100 border-slate-300'
+                }`}>
+                  {tab.shortcut}
+                </kbd>
+              )}
+            </button>
+          );
+        })}
       </nav>
 
       {/* Main Content Area */}

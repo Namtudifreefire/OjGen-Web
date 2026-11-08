@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TestGroupSpec, Problem, Config } from '../../core/types';
 import { TestPlanManager } from '../../core/testPlan';
-import { X, Plus, Trash2, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Plus, Trash2, Sparkles, CheckCircle2, AlertCircle, Layers } from 'lucide-react';
 
 interface TestPlanModalProps {
   isOpen: boolean;
@@ -57,7 +57,8 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <div>
             <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-              <span>🧩 Kế hoạch phân nhóm test (Subtasks)</span>
+              <Layers className="w-4 h-4 text-slate-400" />
+              <span>Kế hoạch phân nhóm test (Subtasks)</span>
             </h3>
             <p className="text-xs text-slate-400">
               Tổng số test: <span className="font-mono text-blue-400">{totalTests}</span> · Tổng điểm: <span className={`font-mono font-bold ${totalScore === 100 ? 'text-emerald-400' : 'text-amber-400'}`}>{totalScore}/100</span>

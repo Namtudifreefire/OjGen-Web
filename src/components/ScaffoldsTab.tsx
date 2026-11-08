@@ -17,7 +17,7 @@ export const ScaffoldsTab: React.FC<ScaffoldsTabProps> = ({ problem, config }) =
 
   const handleCopy = () => {
     if (!currentTemplate) return;
-    navigator.clipboard.writeText(currentTemplate.source);
+    navigator.clipboard?.writeText(currentTemplate.source).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -39,8 +39,8 @@ export const ScaffoldsTab: React.FC<ScaffoldsTabProps> = ({ problem, config }) =
       <div className="flex items-center justify-between pb-3 border-b border-slate-800">
         <div>
           <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <Code2 className="w-4 h-4 text-blue-400" />
-            <span>🧰 Tạo khung Validator &amp; Checker (Scaffold Templates)</span>
+            <Code2 className="w-4 h-4 text-slate-400" />
+            <span>Tạo khung Validator &amp; Checker (Scaffold Templates)</span>
           </h2>
           <p className="text-xs text-slate-400">
             Tạo sẵn mã nguồn C++ (Standalone / Testlib) và Python theo đúng khuôn và cấu hình bài hiện tại

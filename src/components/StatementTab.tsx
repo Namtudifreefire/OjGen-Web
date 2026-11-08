@@ -80,7 +80,9 @@ export const StatementTab: React.FC<StatementTabProps> = ({
       nextSamples[index] = { ...s, output: out.trim() };
       onChangeStatement({ ...statement, samples: nextSamples });
     } catch (e: any) {
-      alert(`Lỗi chạy lời giải: ${e.message}`);
+      const nextSamples = [...statement.samples];
+      nextSamples[index] = { ...s, output: `[Lỗi giải mẫu: ${e.message}]` };
+      onChangeStatement({ ...statement, samples: nextSamples });
     }
   };
 
@@ -90,8 +92,8 @@ export const StatementTab: React.FC<StatementTabProps> = ({
       <div className="flex items-center justify-between pb-3 border-b border-slate-800">
         <div>
           <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-blue-400" />
-            <span>✍ Soạn thảo đề bài (Problem Statement)</span>
+            <FileText className="w-4 h-4 text-slate-400" />
+            <span>Soạn thảo đề bài (Problem Statement)</span>
           </h2>
           <p className="text-xs text-slate-400">
             Hỗ trợ định dạng đề thi chuẩn VNOI, QBOJ, Codeforces, Kattis

@@ -18,5 +18,8 @@ ojgen_settings.ini
 .ojgen_output_checkpoint.json
 .DS_Store
 Thumbs.db
-Desktop.ini
 dist/
+node_modules/
+.playwright-cli/
+.env
+.env.local

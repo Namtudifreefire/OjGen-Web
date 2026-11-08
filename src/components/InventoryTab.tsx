@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { GeneratedTestCase, Problem } from '../core/types';
-import { Search, Download, Eye, Network, BarChart2, Grid } from 'lucide-react';
+import { Search, Download, Eye, Network, BarChart2, Grid, Layers } from 'lucide-react';
 
 interface InventoryTabProps {
   tests: GeneratedTestCase[];
@@ -225,7 +225,8 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-3">
         <div>
           <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <span>🧾 Kiểm kê &amp; Trực quan hóa bộ test</span>
+            <Layers className="w-4 h-4 text-slate-400" />
+            <span>Kiểm kê &amp; Trực quan hóa bộ test</span>
             <span className="text-xs font-normal text-slate-400">({tests.length} test hiện có)</span>
           </h2>
         </div>

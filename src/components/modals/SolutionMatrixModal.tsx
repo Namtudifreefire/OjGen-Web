@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GeneratedTestCase, Problem, Config } from '../../core/types';
-import { X, Play, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { X, Play, CheckCircle2, XCircle, Clock, Grid } from 'lucide-react';
 
 interface SolutionMatrixModalProps {
   isOpen: boolean;
@@ -73,7 +73,8 @@ export const SolutionMatrixModal: React.FC<SolutionMatrixModalProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <div>
             <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-              <span>🧪 So sánh ma trận nhiều lời giải (Solution Matrix)</span>
+              <Grid className="w-4 h-4 text-slate-400" />
+              <span>So sánh ma trận nhiều lời giải (Solution Matrix)</span>
             </h3>
             <p className="text-xs text-slate-400">
               Kiểm tra tỷ lệ AC / WA / TLE của các thuật toán trên {tests.length} test

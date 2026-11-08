@@ -16,8 +16,8 @@ export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, r
       <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-xl w-full shadow-2xl flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-            <Compass className="w-4 h-4 text-blue-400" />
-            <span>🧭 Báo cáo độ phủ &amp; Gợi ý trường hợp biên</span>
+            <Compass className="w-4 h-4 text-slate-400" />
+            <span>Báo cáo độ phủ &amp; Gợi ý trường hợp biên</span>
           </h3>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X className="w-4 h-4" />

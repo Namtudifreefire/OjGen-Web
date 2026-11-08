@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   private handleCopy = () => {
     const text = `OjGen Web Error:\n${this.state.error?.message || ''}\n\nStack:\n${this.state.error?.stack || ''}\n\nComponent Stack:\n${this.state.errorInfo?.componentStack || ''}`;
-    navigator.clipboard?.writeText(text);
+    navigator.clipboard?.writeText(text).catch(() => {});
     this.setState({ copied: true });
     setTimeout(() => this.setState({ copied: false }), 2000);
   };

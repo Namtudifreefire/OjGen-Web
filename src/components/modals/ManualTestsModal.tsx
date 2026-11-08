@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ManualTestCase, Problem, Config } from '../../core/types';
-import { X, Plus, Trash2, CheckCircle2, Play, AlertCircle } from 'lucide-react';
+import { X, Plus, Trash2, CheckCircle2, Play, AlertCircle, FileText } from 'lucide-react';
 
 interface ManualTestsModalProps {
   isOpen: boolean;
@@ -59,7 +59,8 @@ export const ManualTestsModal: React.FC<ManualTestsModalProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <div>
             <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-              <span>📥 Test nhập tay / Test mẫu (Sample tests)</span>
+              <FileText className="w-4 h-4 text-slate-400" />
+              <span>Test nhập tay / Test mẫu (Sample tests)</span>
             </h3>
             <p className="text-xs text-slate-400">
               Nhập các ca kiểm thử đặc thù và tự động sinh output chuẩn
