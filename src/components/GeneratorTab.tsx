@@ -26,6 +26,8 @@ import { Rng } from '../core/rng';
 import { ALL_PROBLEMS, findProblem } from '../core/problems/allProblems';
 import { ALGORITHM_TOPICS, AlgorithmTopic, getTopicUrl } from '../core/topics';
 import { ProblemPackageExporter } from '../core/packageExporter';
+import { useLanguage } from '../i18n/LanguageContext';
+import { translations } from '../i18n/translations';
 
 interface GeneratorTabProps {
   currentProblem: Problem;
@@ -74,6 +76,17 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
   runTriggerCount = 0,
   onRunningChange,
 }) => {
+  const {
+    t,
+    lang,
+    translateProblemTitle,
+    translateProblemCategory,
+    translateParamLabel,
+    translateTopicCategory,
+    translateTopicName,
+    translateOptionLabel,
+  } = useLanguage();
+
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>(currentProblem.mainCategory);
   const [samplePreview, setSamplePreview] = useState<string>('');
@@ -82,7 +95,6 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
   const [progress, setProgress] = useState<number>(0);
   const [generationSummary, setGenerationSummary] = useState<string | null>(null);
   const [createZip, setCreateZip] = useState<boolean>(true);
-  const [outDirName, setOutDirName] = useState<string>('output');
   const [sampleCopied, setSampleCopied] = useState<boolean>(false);
 
   const handleCopySample = () => {
@@ -118,7 +130,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
     try {
       const err = currentProblem.validateConfig(config);
       if (err) {
-        setSamplePreview(`[LỖI CẤU HÌNH]\n${err}`);
+        setSamplePreview(lang === 'en' ? `[CONFIG ERROR]\n${err}` : `[LỖI CẤU HÌNH]\n${err}`);
         return;
       }
       const testSeed = seed ? BigInt(seed) : 2026n;
@@ -127,16 +139,25 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
       const validation = currentProblem.validateInput(sample, config);
       let text = sample;
       if (validation) {
-        text += `\n[CẢNH BÁO XÁC THỰC]: ${validation}`;
+        text += lang === 'en'
+          ? `\n[VALIDATION WARNING]: ${validation}`
+          : `\n[CẢNH BÁO XÁC THỰC]: ${validation}`;
       } else {
         const out = currentProblem.solve(sample, config);
-        text += `\n--- [ĐÁP ÁN CHUẨN SINH RA (.out)] ---\n${out}`;
+        text += lang === 'en'
+          ? `\n--- [CANONICAL SOLUTION OUTPUT (.out)] ---\n${out}`
+          : `\n--- [ĐÁP ÁN CHUẨN SINH RA (.out)] ---\n${out}`;
       }
       setSamplePreview(text);
-      onAddLog(`Đã sinh thử input mẫu thành công cho ${currentProblem.title}`, 'info');
+      onAddLog(
+        lang === 'en'
+          ? `Generated sample input successfully for ${translateProblemTitle(currentProblem.id, currentProblem.title)}`
+          : `Đã sinh thử input mẫu thành công cho ${currentProblem.title}`,
+        'info'
+      );
     } catch (e: any) {
-      setSamplePreview(`[LỖI]: ${e.message}`);
-      onAddLog(`Lỗi sinh input mẫu: ${e.message}`, 'error');
+      setSamplePreview(lang === 'en' ? `[ERROR]: ${e.message}` : `[LỖI]: ${e.message}`);
+      onAddLog(lang === 'en' ? `Sample generation error: ${e.message}` : `Lỗi sinh input mẫu: ${e.message}`, 'error');
     }
   };
 
@@ -165,7 +186,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
   const handleRun = async () => {
     const configError = currentProblem.validateConfig(config);
     if (configError) {
-      onAddLog(`Cấu hình không hợp lệ: ${configError}`, 'error');
+      onAddLog(lang === 'en' ? `Invalid configuration: ${configError}` : `Cấu hình không hợp lệ: ${configError}`, 'error');
       return;
     }
 
@@ -174,14 +195,18 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
     setIsRunning(true);
     setProgress(0);
     setGenerationSummary(null);
-    onAddLog(`Bắt đầu tạo ${testCount} bộ test cho khuôn "${currentProblem.title}"...`, 'info');
+    onAddLog(
+      lang === 'en'
+        ? `Generating ${testCount} tests for "${translateProblemTitle(currentProblem.id, currentProblem.title)}"...`
+        : `Bắt đầu tạo ${testCount} bộ test cho khuôn "${currentProblem.title}"...`,
+      'info'
+    );
 
     const actualSeed = seed ? seed : Math.floor(Math.random() * 1000000000).toString();
     const tests: GeneratedTestCase[] = [];
     const baseRng = new Rng(actualSeed);
 
     try {
-      // If groups exist, divide among groups
       const totalToGen = groups.length > 0 ? groups.reduce((acc, g) => acc + g.testCount, 0) : testCount;
       let testIdx = 1;
 
@@ -254,14 +279,21 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
 
       if (runId !== runIdRef.current) return;
       if (cancelRef.current) {
-        onAddLog(`Đã dừng tạo test. Đã sinh ${tests.length} test trước khi hủy.`, 'warn');
+        onAddLog(
+          lang === 'en'
+            ? `Stopped generating tests. Generated ${tests.length} tests before cancel.`
+            : `Đã dừng tạo test. Đã sinh ${tests.length} test trước khi hủy.`,
+          'warn'
+        );
         if (tests.length > 0) setGeneratedTests(tests);
         return;
       }
 
       setGeneratedTests(tests);
       setProgress(100);
-      const summaryMsg = `Đã tạo thành công ${tests.length} test (gồm ${manualTests.length} test tay/mẫu) với Seed: ${actualSeed}`;
+      const summaryMsg = lang === 'en'
+        ? `Successfully generated ${tests.length} tests (including ${manualTests.length} manual/sample tests) with Seed: ${actualSeed}`
+        : `Đã tạo thành công ${tests.length} test (gồm ${manualTests.length} test tay/mẫu) với Seed: ${actualSeed}`;
       setGenerationSummary(summaryMsg);
       onAddLog(summaryMsg, 'success');
 
@@ -278,15 +310,20 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
           });
           if (runId !== runIdRef.current || cancelRef.current) return;
           ProblemPackageExporter.downloadBlob(blob, `${currentProblem.id}_tests.zip`);
-          onAddLog(`Đã tải xuống file ${currentProblem.id}_tests.zip thành công!`, 'success');
+          onAddLog(
+            lang === 'en'
+              ? `Downloaded ${currentProblem.id}_tests.zip successfully!`
+              : `Đã tải xuống file ${currentProblem.id}_tests.zip thành công!`,
+            'success'
+          );
         } catch (err: any) {
           if (runId !== runIdRef.current) return;
-          onAddLog(`Lỗi tạo file ZIP: ${err.message}`, 'error');
+          onAddLog(lang === 'en' ? `ZIP creation error: ${err.message}` : `Lỗi tạo file ZIP: ${err.message}`, 'error');
         }
       }
     } catch (err: any) {
       if (runId !== runIdRef.current) return;
-      onAddLog(`Lỗi tạo bộ test: ${err.message}`, 'error');
+      onAddLog(lang === 'en' ? `Generation error: ${err.message}` : `Lỗi tạo bộ test: ${err.message}`, 'error');
     } finally {
       if (runId === runIdRef.current) setIsRunning(false);
     }
@@ -294,10 +331,16 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
 
   const handleCancel = () => {
     cancelRef.current = true;
-    onAddLog('Đã nhấn hủy tạo bộ test...', 'warn');
+    onAddLog(lang === 'en' ? 'Generation cancelled by user...' : 'Đã nhấn hủy tạo bộ test...', 'warn');
   };
 
   const validationError = currentProblem.validateConfig(config);
+
+  // English format description lookup fallback
+  const displayFormatDescription =
+    lang === 'en' && (translations.en.problemFormats as Record<string, string>)[currentProblem.id]
+      ? (translations.en.problemFormats as Record<string, string>)[currentProblem.id]
+      : currentProblem.formatDescription;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 p-4 max-w-7xl mx-auto">
@@ -307,22 +350,22 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
             <div>
-              <h2 className="text-sm font-semibold text-slate-100">Khuôn bài toán</h2>
-              <p className="text-[11px] text-slate-400">Chọn cấu trúc input phù hợp với đề thi</p>
+              <h2 className="text-sm font-semibold text-slate-100">{t('generator.templateHeading')}</h2>
+              <p className="text-[11px] text-slate-400">{t('generator.templateDesc')}</p>
             </div>
-            <span className="text-xs font-mono text-slate-400">19 khuôn</span>
+            <span className="text-xs font-mono text-slate-400">{t('generator.templatesCount')}</span>
           </div>
 
           {/* Algorithm Topic selector */}
           <div className="mb-3">
             <div className="flex items-center justify-between text-xs font-medium text-slate-300 mb-1">
-              <span>Chủ đề thuật toán gợi ý</span>
+              <span>{t('generator.algorithmTopics')}</span>
               {selectedTopic && (
                 <button
                   onClick={() => setSelectedTopic('')}
                   className="text-[10px] text-slate-400 hover:text-white transition"
                 >
-                  Xóa lọc
+                  {t('generator.clearFilter')}
                 </button>
               )}
             </div>
@@ -331,21 +374,26 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
               onChange={(e) => {
                 const topicName = e.target.value;
                 setSelectedTopic(topicName);
-                const found = ALGORITHM_TOPICS.find((t) => t.name === topicName);
+                const found = ALGORITHM_TOPICS.find((tItem) => tItem.name === topicName);
                 if (found) {
                   const targetProb = findProblem(found.recommendedProblemId);
                   if (targetProb) {
                     onSelectProblem(targetProb);
-                    onAddLog(`Gợi ý khuôn "${targetProb.title}" từ chủ đề "${found.name}" (${found.source})`, 'info');
+                    onAddLog(
+                      lang === 'en'
+                        ? `Suggested "${translateProblemTitle(targetProb.id, targetProb.title)}" from topic "${translateTopicName(found.name)}" (${found.source})`
+                        : `Gợi ý khuôn "${targetProb.title}" từ chủ đề "${found.name}" (${found.source})`,
+                      'info'
+                    );
                   }
                 }
               }}
               className="w-full text-xs bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-blue-500 transition"
             >
-              <option value="">-- Chọn chủ đề gợi ý (VNOI, CF, QBOJ...) --</option>
-              {ALGORITHM_TOPICS.map((t, idx) => (
-                <option key={idx} value={t.name}>
-                  {t.name} ({t.source} · {t.category})
+              <option value="">{t('generator.topicPlaceholder')}</option>
+              {ALGORITHM_TOPICS.map((tItem, idx) => (
+                <option key={idx} value={tItem.name}>
+                  {translateTopicName(tItem.name)} ({tItem.source} · {translateTopicCategory(tItem.category)})
                 </option>
               ))}
             </select>
@@ -354,7 +402,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
           {/* Main Category */}
           <div className="grid grid-cols-2 gap-2 mb-3">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Dạng chính</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">{t('generator.mainCategory')}</label>
               <select
                 value={selectedCategory}
                 onChange={(e) => {
@@ -366,7 +414,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
               >
                 {categories.map((c) => (
                   <option key={c} value={c}>
-                    {c}
+                    {translateProblemCategory(c)}
                   </option>
                 ))}
               </select>
@@ -374,7 +422,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
 
             {/* Problem Type Dropdown */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Khuôn input</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">{t('generator.inputTemplate')}</label>
               <select
                 value={currentProblem.id}
                 onChange={(e) => {
@@ -385,7 +433,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
               >
                 {problemsInCategory.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.title}
+                    {translateProblemTitle(p.id, p.title)}
                   </option>
                 ))}
               </select>
@@ -397,26 +445,26 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
             <button
               onClick={onOpenPlan}
               className="px-2 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center justify-center gap-1.5"
-              title="Phân chia nhóm test và điểm số (Ctrl+P)"
+              title={lang === 'en' ? 'Subtask and score breakdown (Ctrl+P)' : 'Phân chia nhóm test và điểm số (Ctrl+P)'}
             >
               <Layers className="w-3.5 h-3.5 text-slate-400" />
-              <span>Nhóm ({groups.length})</span>
+              <span>{t('generator.groupsBtn', { count: groups.length })}</span>
             </button>
             <button
               onClick={onOpenManual}
               className="px-2 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center justify-center gap-1.5"
-              title="Thêm các test tay hoặc test mẫu"
+              title={lang === 'en' ? 'Add manual or sample tests' : 'Thêm các test tay hoặc test mẫu'}
             >
               <Edit3 className="w-3.5 h-3.5 text-slate-400" />
-              <span>Test tay ({manualTests.length})</span>
+              <span>{t('generator.manualTestsBtn', { count: manualTests.length })}</span>
             </button>
             <button
               onClick={onOpenDiff}
               className="px-2 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center justify-center gap-1.5"
-              title="Kiểm thử đối chiếu lời giải chuẩn & ứng viên (Ctrl+D)"
+              title={lang === 'en' ? 'Differential testing between canonical & candidate (Ctrl+D)' : 'Kiểm thử đối chiếu lời giải chuẩn & ứng viên (Ctrl+D)'}
             >
               <Scale className="w-3.5 h-3.5 text-slate-400" />
-              <span>Đối chiếu</span>
+              <span>{t('generator.diffBtn')}</span>
             </button>
           </div>
 
@@ -426,12 +474,12 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
               onClick={() => setIsFormatOpen(!isFormatOpen)}
               className="w-full px-3 py-1.5 text-xs font-medium text-slate-300 flex items-center justify-between hover:bg-slate-900/60 transition"
             >
-              <span>Định dạng input chính thức</span>
+              <span>{t('generator.officialFormat')}</span>
               {isFormatOpen ? <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />}
             </button>
             {isFormatOpen && (
               <div className="p-3 border-t border-slate-800 text-[11px] font-mono text-slate-300 whitespace-pre-wrap bg-slate-950 leading-relaxed select-text">
-                {currentProblem.formatDescription}
+                {displayFormatDescription}
               </div>
             )}
           </div>
@@ -441,16 +489,17 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
             <div>
-              <h2 className="text-sm font-semibold text-slate-100">Tham số sinh dữ liệu</h2>
-              <p className="text-[11px] text-slate-400">{currentProblem.title}</p>
+              <h2 className="text-sm font-semibold text-slate-100">{t('generator.paramsTitle')}</h2>
+              <p className="text-[11px] text-slate-400">{translateProblemTitle(currentProblem.id, currentProblem.title)}</p>
             </div>
           </div>
 
           {/* Dynamic parameter controls */}
           <div className="space-y-3">
             {currentProblem.params.map((param) => {
-              // Check visibility
               if (param.visibleWhen && !param.visibleWhen(config)) return null;
+
+              const displayLabel = translateParamLabel(param.key, param.label);
 
               if (param.type === 'bool') {
                 const checked = config.getBool(param.key);
@@ -466,7 +515,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
                       }}
                       className="rounded bg-slate-950 border-slate-700 text-blue-600 focus:ring-0 focus:ring-offset-0 w-4 h-4"
                     />
-                    <span>{param.label}</span>
+                    <span>{displayLabel}</span>
                   </label>
                 );
               }
@@ -475,7 +524,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
                 const val = config.get(param.key).toString();
                 return (
                   <div key={param.key}>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">{param.label}</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">{displayLabel}</label>
                     <select
                       value={val}
                       onChange={(e) => {
@@ -487,7 +536,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
                     >
                       {param.options.map((opt) => (
                         <option key={opt.value.toString()} value={opt.value.toString()}>
-                          {opt.label}
+                          {translateOptionLabel(opt.label)}
                         </option>
                       ))}
                     </select>
@@ -499,7 +548,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
                 const textVal = config.getText(param.key, param.defText || '');
                 return (
                   <div key={param.key}>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">{param.label}</label>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">{displayLabel}</label>
                     {param.multiline ? (
                       <textarea
                         rows={3}
@@ -533,7 +582,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
               return (
                 <div key={param.key}>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-medium text-slate-300">{param.label}</label>
+                    <label className="text-xs font-medium text-slate-300">{displayLabel}</label>
                     <span className="text-[10px] text-slate-500">
                       [{param.lo.toString()} .. {param.hi.toString()}]
                     </span>
@@ -573,12 +622,12 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
             <div>
-              <h2 className="text-sm font-semibold text-slate-100">Tạo bộ test &amp; Xuất dữ liệu</h2>
-              <p className="text-[11px] text-slate-400">Bộ sinh Mersenne Twister 64-bit · Lời giải chuẩn: {currentProblem.id}</p>
+              <h2 className="text-sm font-semibold text-slate-100">{t('generator.generationTitle')}</h2>
+              <p className="text-[11px] text-slate-400">{t('generator.generationSubtitle', { id: currentProblem.id })}</p>
             </div>
             {isRunning && (
               <span className="text-xs text-blue-400 font-mono animate-pulse">
-                Đang tạo test ({progress}%)...
+                {t('generator.progressLabel', { pct: progress })}
               </span>
             )}
           </div>
@@ -586,7 +635,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
-                Số lượng test sinh tự động
+                {t('generator.testCountLabel')}
               </label>
               <input
                 type="number"
@@ -600,12 +649,12 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
 
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
-                Seed ngẫu nhiên (tái lập test)
+                {t('generator.seedLabel')}
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Để trống = ngẫu nhiên"
+                  placeholder={t('generator.seedPlaceholder')}
                   value={seed}
                   onChange={(e) => onChangeSeed(e.target.value)}
                   className="flex-1 text-xs font-mono bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-blue-500 transition select-text"
@@ -613,7 +662,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
                 <button
                   onClick={() => onChangeSeed(Math.floor(Math.random() * 1000000000).toString())}
                   className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition"
-                  title="Tạo seed ngẫu nhiên mới"
+                  title={t('generator.newSeedBtn')}
                 >
                   <Dice5 className="w-4 h-4 text-slate-400" />
                 </button>
@@ -627,10 +676,10 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
               onClick={handleRun}
               disabled={isRunning || !!validationError}
               className="flex-1 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-medium text-xs transition flex items-center justify-center gap-2"
-              title="Nhấn để bắt đầu tạo toàn bộ test (Phím tắt: Ctrl+G)"
+              title={`${t('generator.generateBtn')} (Ctrl+G)`}
             >
               <Play className="w-3.5 h-3.5 fill-current" />
-              <span>{isRunning ? 'Đang tạo bộ test...' : 'Tạo bộ test'}</span>
+              <span>{isRunning ? t('generator.generatingBtn') : t('generator.generateBtn')}</span>
               <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-blue-700 text-[9px] font-mono text-blue-100 ml-1">
                 Ctrl+G
               </kbd>
@@ -640,20 +689,20 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
               onClick={handlePreview}
               disabled={isRunning || !!validationError}
               className="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 border border-slate-700 text-xs font-medium transition flex items-center justify-center gap-1.5"
-              title="Sinh thử 1 test mẫu với cấu hình và seed hiện tại"
+              title={t('generator.previewSampleBtn')}
             >
               <Eye className="w-3.5 h-3.5 text-slate-400" />
-              <span>Xem thử mẫu</span>
+              <span>{t('generator.previewBtn')}</span>
             </button>
 
             {isRunning && (
               <button
                 onClick={handleCancel}
                 className="py-2 px-3 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/40 text-xs font-medium transition flex items-center justify-center gap-1.5"
-                title="Dừng quá trình sinh test"
+                title={t('generator.cancelBtn')}
               >
                 <Square className="w-3.5 h-3.5 fill-current text-red-400" />
-                <span>Hủy</span>
+                <span>{t('generator.cancelBtn')}</span>
               </button>
             )}
           </div>
@@ -667,10 +716,10 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
                 onChange={(e) => setCreateZip(e.target.checked)}
                 className="rounded bg-slate-950 border-slate-700 text-blue-600 focus:ring-0 w-3.5 h-3.5"
               />
-              <span>Tự động nén và tải ZIP sau khi tạo</span>
+              <span>{t('generator.autoZip')}</span>
             </label>
             <span className="text-[11px] font-mono text-slate-400">
-              Giải: <span className="text-slate-300">{currentProblem.id}</span>
+              {t('generator.solverPrefix')} <span className="text-slate-300">{currentProblem.id}</span>
             </span>
           </div>
 
@@ -679,7 +728,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
             <div
               className="w-full bg-slate-950 rounded-full h-1.5 mt-3 overflow-hidden border border-slate-800"
               role="progressbar"
-              aria-label="Tiến độ tạo bộ test"
+              aria-label={t('generator.generationTitle')}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={progress}
@@ -704,14 +753,14 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
                   className="px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1"
                 >
                   <Compass className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Độ phủ</span>
+                  <span>{t('generator.coverageBtn')}</span>
                 </button>
                 <button
                   onClick={() => onNavigateToTab('inventory')}
                   className="px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1"
                 >
                   <FileCheck className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Kiểm kê ({generatedTests.length})</span>
+                  <span>{t('generator.inventoryBtn', { count: generatedTests.length })}</span>
                 </button>
               </div>
             </div>
@@ -722,17 +771,17 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col flex-1 shadow-sm">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
             <div>
-              <h2 className="text-sm font-semibold text-slate-100">Xem trước input &amp; output</h2>
-              <p className="text-[11px] text-slate-400">Kiểm tra 1 test được sinh với cấu hình và seed hiện tại</p>
+              <h2 className="text-sm font-semibold text-slate-100">{t('generator.previewTitle')}</h2>
+              <p className="text-[11px] text-slate-400">{t('generator.previewSubtitle')}</p>
             </div>
             {samplePreview && (
               <button
                 onClick={handleCopySample}
                 className="flex items-center gap-1 px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
-                title="Sao chép toàn bộ mẫu"
+                title={t('common.copy')}
               >
                 {sampleCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-                <span>{sampleCopied ? 'Đã chép' : 'Sao chép'}</span>
+                <span>{sampleCopied ? t('common.copied') : t('common.copy')}</span>
               </button>
             )}
           </div>
@@ -745,9 +794,9 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
             ) : (
               <div className="h-full min-h-[160px] flex flex-col items-center justify-center text-center text-slate-500 text-xs gap-1.5 p-4 select-none">
                 <Eye className="w-6 h-6 text-slate-600 mb-1" />
-                <p className="text-slate-400 font-sans font-medium">Chưa có dữ liệu xem trước</p>
+                <p className="text-slate-400 font-sans font-medium">{t('generator.noPreview')}</p>
                 <p className="text-slate-500 font-sans max-w-sm">
-                  Nhấn <span className="text-slate-300 font-medium">"Xem thử mẫu"</span> ở trên để sinh thử 1 test theo cấu hình và seed hiện tại, kèm đáp án chuẩn sinh ra.
+                  {t('generator.noPreviewDesc')}
                 </p>
               </div>
             )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { CoverageReport } from '../../core/coverage';
 import { X, Compass, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface CoverageModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface CoverageModalProps {
 }
 
 export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, report }) => {
+  const { lang, t } = useLanguage();
   if (!isOpen || !report) return null;
 
   return (
@@ -17,7 +19,7 @@ export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, r
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
             <Compass className="w-4 h-4 text-slate-400" />
-            <span>Báo cáo độ phủ &amp; Gợi ý trường hợp biên</span>
+            <span>{t('modals.coverage.title')}</span>
           </h3>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X className="w-4 h-4" />
@@ -32,7 +34,7 @@ export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, r
           <div>
             <h4 className="font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              Đã quan sát được trong cấu hình:
+              {t('modals.coverage.observed')}
             </h4>
             <ul className="space-y-1.5 pl-2">
               {report.observations.map((obs, idx) => (
@@ -47,7 +49,7 @@ export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, r
           <div>
             <h4 className="font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
-              Gợi ý bổ sung test:
+              {t('modals.coverage.suggestions')}
             </h4>
             <ul className="space-y-1.5 pl-2">
               {report.suggestions.map((sug, idx) => (
@@ -60,13 +62,13 @@ export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, r
           </div>
 
           <p className="text-[11px] text-slate-500 italic pt-2 border-t border-slate-800">
-            * Các phép đo dùng định dạng input mà OjGen nhận diện; phân loại trường hợp mang tính heuristic, không thay thế việc rà soát logic đề.
+            {t('modals.coverage.disclaimer')}
           </p>
         </div>
 
         <div className="p-3 border-t border-slate-800 flex justify-end bg-slate-950/60">
           <button onClick={onClose} className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs">
-            Đóng
+            {t('common.close')}
           </button>
         </div>
       </div>

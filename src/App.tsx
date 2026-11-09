@@ -32,8 +32,10 @@ import { ALL_PROBLEMS, findProblem } from './core/problems/allProblems';
 import { Problem, Config, TestGroupSpec, ManualTestCase, GeneratedTestCase, ProblemStatement } from './core/types';
 import { CoverageAnalyzer, CoverageReport } from './core/coverage';
 import { Rng } from './core/rng';
+import { useLanguage } from './i18n/LanguageContext';
 
 export function App() {
+  const { t, lang, translateProblemTitle } = useLanguage();
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [activeTab, setActiveTab] = useState<string>('generator');
 
@@ -47,14 +49,20 @@ export function App() {
   const [groups, setGroups] = useState<TestGroupSpec[]>([]);
   const [manualTests, setManualTests] = useState<ManualTestCase[]>([]);
   const [generatedTests, setGeneratedTests] = useState<GeneratedTestCase[]>([]);
-  const [statement, setStatement] = useState<ProblemStatement>({
-    name: 'Mảng số nguyên và tổng phần tử',
+  const [statement, setStatement] = useState<ProblemStatement>(() => ({
+    name: lang === 'en' ? 'Integer Array and Element Sum' : 'Mảng số nguyên và tổng phần tử',
     code: 'SUMARR',
     timeLimitMs: 1000,
     memoryLimitMb: 256,
-    description: 'Cho mảng gồm N số nguyên A1, A2, ..., AN. Hãy tính tổng tất cả các phần tử trong mảng.',
-    inputFormat: 'Dòng 1 ghi số nguyên N (1 ≤ N ≤ 10).\nDòng 2 ghi N số nguyên A1 ... AN (1 ≤ Ai ≤ 100).',
-    outputFormat: 'In ra một số nguyên duy nhất là tổng các phần tử của mảng.',
+    description: lang === 'en'
+      ? 'Given an array of N integers A1, A2, ..., AN. Calculate the sum of all elements in the array.'
+      : 'Cho mảng gồm N số nguyên A1, A2, ..., AN. Hãy tính tổng tất cả các phần tử trong mảng.',
+    inputFormat: lang === 'en'
+      ? 'Line 1 contains integer N (1 ≤ N ≤ 10).\nLine 2 contains N integers A1 ... AN (1 ≤ Ai ≤ 100).'
+      : 'Dòng 1 ghi số nguyên N (1 ≤ N ≤ 10).\nDòng 2 ghi N số nguyên A1 ... AN (1 ≤ Ai ≤ 100).',
+    outputFormat: lang === 'en'
+      ? 'Print a single integer representing the sum of all array elements.'
+      : 'In ra một số nguyên duy nhất là tổng các phần tử của mảng.',
     constraints: '1 ≤ N ≤ 10\n1 ≤ Ai ≤ 100',
     samples: [
       {
@@ -63,14 +71,16 @@ export function App() {
         explanation: '1 + 2 + 3 + 4 + 5 = 15',
       },
     ],
-  });
+  }));
 
   // Logs
-  const [logs, setLogs] = useState<LogEntry[]>([
+  const [logs, setLogs] = useState<LogEntry[]>(() => [
     {
       id: 'init',
       timestamp: new Date().toLocaleTimeString(),
-      message: 'OjGen 3.3.0 Web Edition đã khởi động sẵn sàng. 19 khuôn bài toán đã sẵn sàng. Sử dụng phím tắt [Ctrl+S], [Ctrl+G], [Ctrl+L] hoặc [?] để thao tác nhanh.',
+      message: lang === 'en'
+        ? 'OjGen 3.3.0 Web Edition is ready. 19 problem templates available. Use shortcuts [Ctrl+S], [Ctrl+G], [Ctrl+L], or [?] for quick actions.'
+        : 'OjGen 3.3.0 Web Edition đã khởi động sẵn sàng. 19 khuôn bài toán đã sẵn sàng. Sử dụng phím tắt [Ctrl+S], [Ctrl+G], [Ctrl+L] hoặc [?] để thao tác nhanh.',
       level: 'info',
     },
   ]);
@@ -145,7 +155,12 @@ export function App() {
 
   // Selftest
   const handleRunSelfTest = () => {
-    addLog('Bắt đầu kiểm tra nội bộ (Selftest) trên toàn bộ 19 khuôn bài...', 'info');
+    addLog(
+      lang === 'en'
+        ? 'Starting internal self-test on all 19 problem templates...'
+        : 'Bắt đầu kiểm tra nội bộ (Selftest) trên toàn bộ 19 khuôn bài...',
+      'info'
+    );
     let passed = 0;
     const rng = new Rng(12345);
     for (const prob of ALL_PROBLEMS) {
@@ -157,16 +172,33 @@ export function App() {
         if (!err && out !== undefined) {
           passed++;
         } else {
-          addLog(`Selftest thất bại tại ${prob.id}: ${err}`, 'error');
+          addLog(
+            lang === 'en'
+              ? `Self-test failed on ${prob.id}: ${err}`
+              : `Selftest thất bại tại ${prob.id}: ${err}`,
+            'error'
+          );
         }
       } catch (e: any) {
-        addLog(`Selftest lỗi ngoại lệ tại ${prob.id}: ${e.message}`, 'error');
+        addLog(
+          lang === 'en'
+            ? `Self-test exception on ${prob.id}: ${e.message}`
+            : `Selftest lỗi ngoại lệ tại ${prob.id}: ${e.message}`,
+          'error'
+        );
       }
     }
-    addLog(`Selftest hoàn tất: ${passed}/${ALL_PROBLEMS.length} khuôn bài toán vượt qua kiểm thử!`, 'success');
+    addLog(
+      lang === 'en'
+        ? `Self-test complete: ${passed}/${ALL_PROBLEMS.length} problem templates passed!`
+        : `Selftest hoàn tất: ${passed}/${ALL_PROBLEMS.length} khuôn bài toán vượt qua kiểm thử!`,
+      'success'
+    );
     showToast(
-      'Selftest hoàn tất',
-      `${passed}/${ALL_PROBLEMS.length} module sinh test, kiểm định và giải tự động hoạt động chính xác.`,
+      lang === 'en' ? 'Self-test Complete' : 'Selftest hoàn tất',
+      lang === 'en'
+        ? `${passed}/${ALL_PROBLEMS.length} generation, validation, and solver modules operating correctly.`
+        : `${passed}/${ALL_PROBLEMS.length} module sinh test, kiểm định và giải tự động hoạt động chính xác.`,
       'success',
       4000
     );
@@ -193,8 +225,17 @@ export function App() {
     a.download = `${statement.code || currentProblem.id}.ojproject.json`;
     a.click();
     URL.revokeObjectURL(url);
-    addLog(`Đã lưu dự án "${a.download}" thành công.`, 'success');
-    showToast('Đã lưu dự án', a.download, 'success');
+    addLog(
+      lang === 'en'
+        ? `Saved project "${a.download}" successfully.`
+        : `Đã lưu dự án "${a.download}" thành công.`,
+      'success'
+    );
+    showToast(
+      lang === 'en' ? 'Project Saved' : 'Đã lưu dự án',
+      a.download,
+      'success'
+    );
   };
 
   // Open Project JSON file
@@ -218,13 +259,31 @@ export function App() {
               if (data.seed) setSeed(data.seed);
               if (data.statement) setStatement(data.statement);
               if (data.manualTests) setManualTests(data.manualTests);
-              addLog(`Đã nạp dự án "${file.name}" thành công!`, 'success');
-              showToast('Đã mở dự án', file.name, 'success');
+              addLog(
+                lang === 'en'
+                  ? `Loaded project "${file.name}" successfully!`
+                  : `Đã nạp dự án "${file.name}" thành công!`,
+                'success'
+              );
+              showToast(
+                lang === 'en' ? 'Project Loaded' : 'Đã mở dự án',
+                file.name,
+                'success'
+              );
             }
           }
         } catch (err: any) {
-          addLog(`Không thể đọc file dự án: ${err.message}`, 'error');
-          showToast('Lỗi đọc tệp', err.message, 'error');
+          addLog(
+            lang === 'en'
+              ? `Cannot read project file: ${err.message}`
+              : `Không thể đọc file dự án: ${err.message}`,
+            'error'
+          );
+          showToast(
+            lang === 'en' ? 'File Read Error' : 'Lỗi đọc tệp',
+            err.message,
+            'error'
+          );
         }
       };
       reader.readAsText(file);
@@ -235,7 +294,12 @@ export function App() {
   // Run all jobs in queue
   const handleExecuteQueue = async (items: any[]) => {
     if (!items || items.length === 0) return;
-    addLog(`Bắt đầu chạy hàng đợi gồm ${items.length} tác vụ...`, 'info');
+    addLog(
+      lang === 'en'
+        ? `Starting execution of queue with ${items.length} tasks...`
+        : `Bắt đầu chạy hàng đợi gồm ${items.length} tác vụ...`,
+      'info'
+    );
     setActiveTab('inventory');
 
     const allNewTests: GeneratedTestCase[] = [];
@@ -247,7 +311,12 @@ export function App() {
       const cfg = item.problemId === currentProblem.id ? config : prob.defaultConfig();
       const jobRng = new Rng(item.seed || Math.floor(Math.random() * 1000000).toString());
 
-      addLog(`[Hàng đợi ${idx + 1}/${items.length}] Đang sinh ${item.testCount} test cho "${prob.title}"...`, 'info');
+      addLog(
+        lang === 'en'
+          ? `[Queue ${idx + 1}/${items.length}] Generating ${item.testCount} tests for "${translateProblemTitle(prob.id, prob.title)}"...`
+          : `[Hàng đợi ${idx + 1}/${items.length}] Đang sinh ${item.testCount} test cho "${prob.title}"...`,
+        'info'
+      );
 
       for (let t = 0; t < item.testCount; t++) {
         try {
@@ -265,7 +334,12 @@ export function App() {
           });
           globalIndex++;
         } catch (err: any) {
-          addLog(`[Hàng đợi ${idx + 1}] Lỗi sinh test ${t + 1}: ${err.message}`, 'error');
+          addLog(
+            lang === 'en'
+              ? `[Queue ${idx + 1}] Error generating test ${t + 1}: ${err.message}`
+              : `[Hàng đợi ${idx + 1}] Lỗi sinh test ${t + 1}: ${err.message}`,
+            'error'
+          );
         }
 
         if (t % 3 === 0) {
@@ -275,7 +349,12 @@ export function App() {
     }
 
     setGeneratedTests(allNewTests);
-    addLog(`Đã hoàn tất toàn bộ ${items.length} tác vụ trong hàng đợi! Đã sinh tổng cộng ${allNewTests.length} test.`, 'success');
+    addLog(
+      lang === 'en'
+        ? `Completed all ${items.length} queue tasks! Generated ${allNewTests.length} tests in total.`
+        : `Đã hoàn tất toàn bộ ${items.length} tác vụ trong hàng đợi! Đã sinh tổng cộng ${allNewTests.length} test.`,
+      'success'
+    );
   };
 
   // Global Keyboard Shortcuts (Ctrl+S, Ctrl+G, Ctrl+L, Ctrl+O, Ctrl+P, Ctrl+B, ?, Esc)
@@ -311,7 +390,12 @@ export function App() {
           setIsMatrixOpen(false);
           setIsQueueOpen(false);
           setIsCoverageOpen(false);
-          showToast('Đã đóng hộp thoại', undefined, 'info', 1500);
+          showToast(
+            lang === 'en' ? 'Dialog closed' : 'Đã đóng hộp thoại',
+            undefined,
+            'info',
+            1500
+          );
           return;
         }
       }
@@ -332,7 +416,11 @@ export function App() {
       if (key === 's') {
         e.preventDefault();
         handleSaveProject();
-        showToast('Phím tắt: [Ctrl+S]', 'Đã lưu cấu hình dự án ra tệp .ojproject.json', 'success');
+        showToast(
+          lang === 'en' ? 'Shortcut: [Ctrl+S]' : 'Phím tắt: [Ctrl+S]',
+          lang === 'en' ? 'Saved project configuration to .ojproject.json' : 'Đã lưu cấu hình dự án ra tệp .ojproject.json',
+          'success'
+        );
         return;
       }
 
@@ -341,11 +429,22 @@ export function App() {
         e.preventDefault();
         setActiveTab('generator');
         if (isGenerating) {
-          showToast('Đang tạo bộ test', 'Quá trình sinh test hiện đang chạy...', 'warn');
+          showToast(
+            lang === 'en' ? 'Generating tests' : 'Đang tạo bộ test',
+            lang === 'en' ? 'Testcase generation is already in progress...' : 'Quá trình sinh test hiện đang chạy...',
+            'warn'
+          );
         } else {
           setRunTriggerCount((c) => c + 1);
-          showToast('Phím tắt: [Ctrl+G]', 'Bắt đầu quá trình tạo bộ test tự động', 'info');
-          addLog('Phím tắt [Ctrl+G]: Bắt đầu sinh bộ test...', 'info');
+          showToast(
+            lang === 'en' ? 'Shortcut: [Ctrl+G]' : 'Phím tắt: [Ctrl+G]',
+            lang === 'en' ? 'Started automated testcase generation' : 'Bắt đầu quá trình tạo bộ test tự động',
+            'info'
+          );
+          addLog(
+            lang === 'en' ? 'Shortcut [Ctrl+G]: Starting test generation...' : 'Phím tắt [Ctrl+G]: Bắt đầu sinh bộ test...',
+            'info'
+          );
         }
         return;
       }
@@ -354,7 +453,11 @@ export function App() {
       if (key === 'l') {
         e.preventDefault();
         setActiveTab('log');
-        showToast('Phím tắt: [Ctrl+L]', 'Đã chuyển nhanh sang tab Nhật ký', 'info');
+        showToast(
+          lang === 'en' ? 'Shortcut: [Ctrl+L]' : 'Phím tắt: [Ctrl+L]',
+          lang === 'en' ? 'Switched to Execution Logs' : 'Đã chuyển nhanh sang tab Nhật ký',
+          'info'
+        );
         return;
       }
 
@@ -362,7 +465,11 @@ export function App() {
       if (key === 'o') {
         e.preventDefault();
         handleOpenProject();
-        showToast('Phím tắt: [Ctrl+O]', 'Mở tệp dự án .ojproject.json', 'info');
+        showToast(
+          lang === 'en' ? 'Shortcut: [Ctrl+O]' : 'Phím tắt: [Ctrl+O]',
+          lang === 'en' ? 'Open project file (.ojproject.json)' : 'Mở tệp dự án .ojproject.json',
+          'info'
+        );
         return;
       }
 
@@ -370,7 +477,11 @@ export function App() {
       if (key === 'p') {
         e.preventDefault();
         setIsPlanOpen(true);
-        showToast('Phím tắt: [Ctrl+P]', 'Mở kế hoạch phân nhóm test / Subtasks', 'info');
+        showToast(
+          lang === 'en' ? 'Shortcut: [Ctrl+P]' : 'Phím tắt: [Ctrl+P]',
+          lang === 'en' ? 'Opened Test Plan / Subtasks' : 'Mở kế hoạch phân nhóm test / Subtasks',
+          'info'
+        );
         return;
       }
 
@@ -378,7 +489,11 @@ export function App() {
       if (key === 'b') {
         e.preventDefault();
         setIsPackageOpen(true);
-        showToast('Phím tắt: [Ctrl+B]', 'Mở đóng gói bài thi (ZIP / Kattis)', 'info');
+        showToast(
+          lang === 'en' ? 'Shortcut: [Ctrl+B]' : 'Phím tắt: [Ctrl+B]',
+          lang === 'en' ? 'Opened Contest Package (ZIP / Kattis)' : 'Mở đóng gói bài thi (ZIP / Kattis)',
+          'info'
+        );
         return;
       }
 
@@ -386,7 +501,11 @@ export function App() {
       if (key === 'i') {
         e.preventDefault();
         setActiveTab('inventory');
-        showToast('Phím tắt: [Ctrl+I]', 'Đã chuyển sang tab Kiểm kê bài test', 'info');
+        showToast(
+          lang === 'en' ? 'Shortcut: [Ctrl+I]' : 'Phím tắt: [Ctrl+I]',
+          lang === 'en' ? 'Switched to Testcase Inventory' : 'Đã chuyển sang tab Kiểm kê bài test',
+          'info'
+        );
         return;
       }
 
@@ -394,7 +513,11 @@ export function App() {
       if (key === 'd') {
         e.preventDefault();
         setActiveTab('differential');
-        showToast('Phím tắt: [Ctrl+D]', 'Đã chuyển sang tab Đối chiếu & Thu nhỏ lỗi', 'info');
+        showToast(
+          lang === 'en' ? 'Shortcut: [Ctrl+D]' : 'Phím tắt: [Ctrl+D]',
+          lang === 'en' ? 'Switched to Differential & Shrinker' : 'Đã chuyển sang tab Đối chiếu & Thu nhỏ lỗi',
+          'info'
+        );
         return;
       }
     };
@@ -446,13 +569,13 @@ export function App() {
         theme === 'dark' ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'
       }`}>
         {[
-          { id: 'generator', label: 'Tạo test', icon: <SlidersHorizontal className="w-3.5 h-3.5" />, shortcut: 'Ctrl+G' },
-          { id: 'log', label: 'Nhật ký', icon: <Terminal className="w-3.5 h-3.5" />, shortcut: 'Ctrl+L' },
-          { id: 'inventory', label: `Kiểm kê (${generatedTests.length})`, icon: <Layers className="w-3.5 h-3.5" />, shortcut: 'Ctrl+I' },
-          { id: 'statement', label: 'Soạn đề bài', icon: <FileText className="w-3.5 h-3.5" /> },
-          { id: 'differential', label: 'Đối chiếu & Thu nhỏ', icon: <Scale className="w-3.5 h-3.5" />, shortcut: 'Ctrl+D' },
-          { id: 'scaffolds', label: 'Khung mã nguồn', icon: <Code2 className="w-3.5 h-3.5" /> },
-          { id: 'help', label: 'Hướng dẫn', icon: <HelpCircle className="w-3.5 h-3.5" />, shortcut: '?' },
+          { id: 'generator', label: t('tabs.generator'), icon: <SlidersHorizontal className="w-3.5 h-3.5" />, shortcut: 'Ctrl+G' },
+          { id: 'log', label: t('tabs.log'), icon: <Terminal className="w-3.5 h-3.5" />, shortcut: 'Ctrl+L' },
+          { id: 'inventory', label: `${t('tabs.inventory')} (${generatedTests.length})`, icon: <Layers className="w-3.5 h-3.5" />, shortcut: 'Ctrl+I' },
+          { id: 'statement', label: t('tabs.statement'), icon: <FileText className="w-3.5 h-3.5" /> },
+          { id: 'differential', label: t('tabs.differential'), icon: <Scale className="w-3.5 h-3.5" />, shortcut: 'Ctrl+D' },
+          { id: 'scaffolds', label: t('tabs.scaffolds'), icon: <Code2 className="w-3.5 h-3.5" /> },
+          { id: 'help', label: t('tabs.help'), icon: <HelpCircle className="w-3.5 h-3.5" />, shortcut: '?' },
         ].map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -536,11 +659,12 @@ export function App() {
       </main>
 
       <StatusBar
-        status="Sẵn sàng"
+        status={t('statusBar.ready')}
         theme={theme}
         seed={seed}
         testCount={generatedTests.length > 0 ? generatedTests.length : testCount}
         problemTitle={currentProblem.title}
+        problemId={currentProblem.id}
       />
 
       {/* Modals */}

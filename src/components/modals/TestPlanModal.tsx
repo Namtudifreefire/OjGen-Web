@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { TestGroupSpec, Problem, Config } from '../../core/types';
 import { TestPlanManager } from '../../core/testPlan';
-import { X, Plus, Trash2, Sparkles, CheckCircle2, AlertCircle, Layers } from 'lucide-react';
+import { X, Plus, Trash2, Sparkles, AlertCircle, Layers } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface TestPlanModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
   problem,
   config,
 }) => {
+  const { lang, t } = useLanguage();
   const [localGroups, setLocalGroups] = useState<TestGroupSpec[]>(groups);
 
   if (!isOpen) return null;
@@ -30,7 +32,7 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
 
   const handleAddGroup = () => {
     const next: TestGroupSpec = {
-      name: `Nhóm ${localGroups.length + 1}`,
+      name: `${lang === 'en' ? 'Subtask' : 'Nhóm'} ${localGroups.length + 1}`,
       testCount: 5,
       score: 20,
       coverageTags: ['small'],
@@ -58,10 +60,10 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
           <div>
             <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
               <Layers className="w-4 h-4 text-slate-400" />
-              <span>Kế hoạch phân nhóm test (Subtasks)</span>
+              <span>{t('modals.testPlan.title')}</span>
             </h3>
             <p className="text-xs text-slate-400">
-              Tổng số test: <span className="font-mono text-blue-400">{totalTests}</span> · Tổng điểm: <span className={`font-mono font-bold ${totalScore === 100 ? 'text-emerald-400' : 'text-amber-400'}`}>{totalScore}/100</span>
+              {t('modals.testPlan.totalTests')} <span className="font-mono text-blue-400">{totalTests}</span> · {t('modals.testPlan.totalScore')} <span className={`font-mono font-bold ${totalScore === 100 ? 'text-emerald-400' : 'text-amber-400'}`}>{totalScore}/100</span>
             </p>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
@@ -77,14 +79,14 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Thêm nhóm</span>
+              <span>{t('modals.testPlan.addGroup')}</span>
             </button>
             <button
               onClick={handleAdversarialPresets}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Tạo nhanh Adversarial Presets</span>
+              <span>{t('modals.testPlan.presetsBtn')}</span>
             </button>
           </div>
 
@@ -99,7 +101,7 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
         <div className="flex-1 overflow-auto p-4 space-y-3">
           {localGroups.length === 0 ? (
             <div className="p-8 text-center text-slate-500 text-xs italic">
-              Chưa có nhóm nào. Nhấn "Thêm nhóm" hoặc "Tạo nhanh Adversarial Presets" để bắt đầu chia subtask.
+              {t('modals.testPlan.empty')}
             </div>
           ) : (
             localGroups.map((group, idx) => (
@@ -114,11 +116,11 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
                       setLocalGroups(next);
                     }}
                     className="font-semibold text-slate-100 bg-transparent border-b border-slate-700 focus:border-blue-500 focus:outline-none px-1 py-0.5 flex-1"
-                    placeholder="Tên nhóm (vd: Subtask 1)"
+                    placeholder={lang === 'en' ? 'Subtask Name (e.g. Subtask 1)' : 'Tên nhóm (vd: Subtask 1)'}
                   />
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-slate-400">Số test:</span>
+                      <span className="text-slate-400">{t('modals.testPlan.tests')}</span>
                       <input
                         type="number"
                         min={1}
@@ -132,7 +134,7 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
                       />
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-slate-400">Điểm:</span>
+                      <span className="text-slate-400">{t('modals.testPlan.score')}</span>
                       <input
                         type="number"
                         min={0}
@@ -152,7 +154,7 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
                         setLocalGroups(next);
                       }}
                       className="p-1 text-slate-400 hover:text-red-400 transition"
-                      title="Xóa nhóm"
+                      title={t('common.delete')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -161,7 +163,7 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
 
                 {/* Tags */}
                 <div className="flex items-center gap-2 pt-1 border-t border-slate-800/80">
-                  <span className="text-[11px] text-slate-400">Nhãn độ phủ:</span>
+                  <span className="text-[11px] text-slate-400">{t('modals.testPlan.coverageTags')}</span>
                   {['small', 'boundary', 'stress', 'adversarial'].map((tag) => {
                     const active = group.coverageTags.includes(tag);
                     return (
@@ -170,7 +172,7 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
                         onClick={() => {
                           const next = [...localGroups];
                           const tags = active
-                            ? group.coverageTags.filter((t) => t !== tag)
+                            ? group.coverageTags.filter((tItem) => tItem !== tag)
                             : [...group.coverageTags, tag];
                           next[idx] = { ...group, coverageTags: tags };
                           setLocalGroups(next);
@@ -195,13 +197,13 @@ export const TestPlanModal: React.FC<TestPlanModalProps> = ({
             onClick={onClose}
             className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
           >
-            Đóng
+            {t('common.close')}
           </button>
           <button
             onClick={handleSave}
             className="px-4 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition shadow-sm"
           >
-            Lưu kế hoạch
+            {t('common.save')}
           </button>
         </div>
       </div>

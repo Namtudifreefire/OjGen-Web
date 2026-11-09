@@ -1,7 +1,153 @@
 import React from 'react';
 import { HelpCircle, BookOpen, Layers, CheckSquare, Sparkles, Terminal } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export const HelpTab: React.FC = () => {
+  const { lang, t } = useLanguage();
+
+  if (lang === 'en') {
+    return (
+      <div className="max-w-4xl mx-auto p-4 space-y-6 text-slate-200">
+        <div className="border-b border-slate-800 pb-4">
+          <h1 className="text-xl font-bold text-slate-100 flex items-center gap-2.5">
+            <BookOpen className="w-6 h-6 text-blue-500" />
+            <span>OjGen 3.3.0 Web User Guide</span>
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Automated testcase generation, validation, and contest packaging suite for competitive programming
+          </p>
+        </div>
+
+        {/* Section 1 */}
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+          <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <Sparkles className="w-4 h-4" /> 1. Testcase Generation Workflow
+          </h2>
+          <div className="text-xs leading-relaxed space-y-2 text-slate-300">
+            <p>
+              • <strong>Step 1: Choose a Problem Template.</strong> Select quickly from recommended competitive programming topics (VNOI, Codeforces, QBOJ, LQDOJ, LTOJ, DMOJ) to match your problem's input specification.
+            </p>
+            <p>
+              • <strong>Step 2: Customize Generation Parameters.</strong> Adjust array size N, value ranges min/max, permutation mode, string length, query count Q, or graph properties (connected, weighted, DAG).
+            </p>
+            <p>
+              • <strong>Step 3: Define Subtasks / Test Groups.</strong> Use the "Test Plan" dialog to split tests into scored subtasks, configure prerequisite subtasks, and apply adversarial coverage tags (small, boundary, stress, adversarial) or preset packs.
+            </p>
+            <p>
+              • <strong>Step 4: Inspect Sample Output & Generate.</strong> Click "Preview Sample" to check an isolated generated testcase and canonical answer. Then click "Generate Tests" (or press Ctrl+G). Enable auto-download to receive a ready-to-use ZIP file.
+            </p>
+          </div>
+        </section>
+
+        {/* Section 2: 19 input templates */}
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+          <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <Layers className="w-4 h-4" /> 2. 19 Supported Input Templates
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
+              <span className="font-semibold text-blue-400 block mb-1">Numbers & Tuples:</span>
+              <ul className="list-disc list-inside space-y-1 text-slate-400">
+                <li><code className="text-slate-300">single_n</code>: Single integer N</li>
+                <li><code className="text-slate-300">two_ints</code>: Pair of integers A and B with ordering options</li>
+              </ul>
+            </div>
+
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
+              <span className="font-semibold text-blue-400 block mb-1">Arrays & Queries:</span>
+              <ul className="list-disc list-inside space-y-1 text-slate-400">
+                <li><code className="text-slate-300">array</code>: 1D array / permutation / sorted sequences</li>
+                <li><code className="text-slate-300">queries</code>: Array with Q point/range updates & queries</li>
+                <li><code className="text-slate-300">prefix_sum_range</code>: QBOJ sumarr range queries</li>
+                <li><code className="text-slate-300">prefix_subsequence_range</code>: QBOJ TDC subsequence queries</li>
+              </ul>
+            </div>
+
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
+              <span className="font-semibold text-blue-400 block mb-1">Matrix, Grid & Strings:</span>
+              <ul className="list-disc list-inside space-y-1 text-slate-400">
+                <li><code className="text-slate-300">string</code>: String generation with custom charsets</li>
+                <li><code className="text-slate-300">matrix</code>: R×C matrix or dual parallel arrays</li>
+                <li><code className="text-slate-300">grid</code>: Character maze grid with optional S and T</li>
+              </ul>
+            </div>
+
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
+              <span className="font-semibold text-blue-400 block mb-1">Graphs, Trees & Chess:</span>
+              <ul className="list-disc list-inside space-y-1 text-slate-400">
+                <li><code className="text-slate-300">graph</code>: Simple, connected, DAG, or bipartite graphs</li>
+                <li><code className="text-slate-300">tree</code>: Random, star, line, or binary trees</li>
+                <li><code className="text-slate-300">pairs</code>: Interval or segment pairs [L, R]</li>
+                <li><code className="text-slate-300">chess_*</code>: 5 Chess and Knight move challenge templates</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Counterexample Shrinking & Differential */}
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+          <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <CheckSquare className="w-4 h-4" /> 3. Differential Testing & Counterexample Shrinker
+          </h2>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            The shrinker currently implements a delta-debugging heuristic for two-line array inputs: it iteratively removes elements and zeroes values over up to 64 trials while ensuring the candidate solution continues to fail. Run the minimized test against your solver to reproduce minimal corner cases.
+          </p>
+        </section>
+
+        {/* Section 4: Problem Packaging */}
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+          <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <Terminal className="w-4 h-4" /> 4. Contest Packaging (OjGen & Kattis PPF)
+          </h2>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            OjGen Standard packages include all .inp/.out files, <code>PACKAGE_SHA256SUMS.txt</code>, <code>inventory.csv</code>, <code>provenance.json</code>, and problem statement Markdown. Kattis packages organize tests into <code>data/sample</code> and <code>data/secret</code> with <code>problem.yaml</code>. Verify destination judge requirements before uploading.
+          </p>
+        </section>
+
+        {/* Section 5: Global Shortcuts */}
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+          <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <HelpCircle className="w-4 h-4" /> 5. Global Keyboard Shortcuts
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-300">
+            <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <span>Save current project (.ojproject.json)</span>
+              <kbd className="px-2 py-1 rounded bg-slate-800 font-mono text-[11px] font-semibold text-slate-200 border border-slate-700">Ctrl + S</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <span>Start automatic testcase generation</span>
+              <kbd className="px-2 py-1 rounded bg-slate-800 font-mono text-[11px] font-semibold text-slate-200 border border-slate-700">Ctrl + G</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <span>Quick switch to Log tab</span>
+              <kbd className="px-2 py-1 rounded bg-slate-800 font-mono text-[11px] font-semibold text-slate-200 border border-slate-700">Ctrl + L</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <span>Open project file (.ojproject.json)</span>
+              <kbd className="px-2 py-1 rounded bg-slate-800 font-mono text-[11px] font-semibold text-slate-200 border border-slate-700">Ctrl + O</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <span>Open Test Plan / Subtasks modal</span>
+              <kbd className="px-2 py-1 rounded bg-slate-800 font-mono text-[11px] font-semibold text-slate-200 border border-slate-700">Ctrl + P</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <span>Open Package modal (ZIP / Kattis)</span>
+              <kbd className="px-2 py-1 rounded bg-slate-800 font-mono text-[11px] font-semibold text-slate-200 border border-slate-700">Ctrl + B</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <span>Open keyboard shortcuts reference</span>
+              <kbd className="px-2 py-1 rounded bg-slate-800 font-mono text-[11px] font-semibold text-slate-200 border border-slate-700">?</kbd>
+            </div>
+            <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <span>Close currently open dialog</span>
+              <kbd className="px-2 py-1 rounded bg-slate-800 font-mono text-[11px] font-semibold text-slate-200 border border-slate-700">Esc</kbd>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6 text-slate-200">
       <div className="border-b border-slate-800 pb-4">

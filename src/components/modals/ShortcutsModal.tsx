@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Keyboard, Command, Save, Play, FileText, Layers, Package, Sparkles, RotateCcw, ListFilter } from 'lucide-react';
+import { X, Keyboard, Save, Play, FileText, Layers, Package, Sparkles, RotateCcw, ListFilter } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface ShortcutsModalProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface ShortcutsModalProps {
 }
 
 export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose }) => {
+  const { lang, t } = useLanguage();
   if (!isOpen) return null;
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -14,75 +16,75 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
   const shortcutGroups = [
     {
-      title: 'Phím tắt tác vụ chính (Global)',
+      title: lang === 'en' ? 'Core Task Shortcuts (Global)' : 'Phím tắt tác vụ chính (Global)',
       items: [
         {
           keys: [`${modKey}`, 'S'],
-          description: 'Lưu toàn bộ dự án hiện tại ra tệp .ojproject.json',
+          description: lang === 'en' ? 'Save current project to .ojproject.json' : 'Lưu toàn bộ dự án hiện tại ra tệp .ojproject.json',
           icon: <Save className="w-4 h-4 text-slate-300" />,
           highlight: true,
         },
         {
           keys: [`${modKey}`, 'G'],
-          description: 'Bắt đầu sinh bộ test (tự động kích hoạt quá trình tạo)',
+          description: lang === 'en' ? 'Generate testcases automatically' : 'Bắt đầu sinh bộ test (tự động kích hoạt quá trình tạo)',
           icon: <Play className="w-4 h-4 text-slate-300" />,
           highlight: true,
         },
         {
           keys: [`${modKey}`, 'L'],
-          description: 'Chuyển nhanh sang tab Nhật ký (xem log thực thi & kết quả)',
+          description: lang === 'en' ? 'Quick switch to Log tab' : 'Chuyển nhanh sang tab Nhật ký (xem log thực thi & kết quả)',
           icon: <FileText className="w-4 h-4 text-slate-300" />,
           highlight: true,
         },
       ],
     },
     {
-      title: 'Tệp & Quản lý bài tập',
+      title: lang === 'en' ? 'File & Problem Management' : 'Tệp & Quản lý bài tập',
       items: [
         {
           keys: [`${modKey}`, 'O'],
-          description: 'Mở tệp dự án OjGen (.ojproject.json)',
+          description: lang === 'en' ? 'Open OjGen project file (.ojproject.json)' : 'Mở tệp dự án OjGen (.ojproject.json)',
           icon: <Layers className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, 'P'],
-          description: 'Mở kế hoạch phân nhóm test / Subtasks',
+          description: lang === 'en' ? 'Open Test Plan / Subtasks configuration' : 'Mở kế hoạch phân nhóm test / Subtasks',
           icon: <Layers className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, 'B'],
-          description: 'Mở hộp thoại đóng gói bài tập (ZIP / Kattis)',
+          description: lang === 'en' ? 'Open Package dialog (ZIP / Kattis)' : 'Mở hộp thoại đóng gói bài tập (ZIP / Kattis)',
           icon: <Package className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, 'M'],
-          description: 'Mở ma trận kiểm thử nhiều lời giải (Solution Matrix)',
+          description: lang === 'en' ? 'Open Solution Matrix benchmarking dialog' : 'Mở ma trận kiểm thử nhiều lời giải (Solution Matrix)',
           icon: <Sparkles className="w-4 h-4 text-slate-400" />,
         },
       ],
     },
     {
-      title: 'Điều hướng tab & Hộp thoại',
+      title: lang === 'en' ? 'Tab Navigation & Dialogs' : 'Điều hướng tab & Hộp thoại',
       items: [
         {
           keys: [`${modKey}`, 'I'],
-          description: 'Chuyển nhanh sang tab Kiểm kê bài test (Inventory)',
+          description: lang === 'en' ? 'Quick switch to Test Inventory tab' : 'Chuyển nhanh sang tab Kiểm kê bài test (Inventory)',
           icon: <ListFilter className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, 'D'],
-          description: 'Chuyển nhanh sang tab Đối chiếu & Thu nhỏ test (Differential)',
+          description: lang === 'en' ? 'Quick switch to Differential & Shrinker tab' : 'Chuyển nhanh sang tab Đối chiếu & Thu nhỏ test (Differential)',
           icon: <RotateCcw className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: [`${modKey}`, '/'],
           altKeys: ['?'],
-          description: 'Mở / Đóng bảng danh sách phím tắt này',
+          description: lang === 'en' ? 'Open / Close this shortcuts reference table' : 'Mở / Đóng bảng danh sách phím tắt này',
           icon: <Keyboard className="w-4 h-4 text-slate-400" />,
         },
         {
           keys: ['Esc'],
-          description: 'Đóng hộp thoại đang mở hoặc hủy tác vụ',
+          description: lang === 'en' ? 'Close current modal or cancel task' : 'Đóng hộp thoại đang mở hoặc hủy tác vụ',
           icon: <X className="w-4 h-4 text-slate-400" />,
         },
       ],
@@ -100,20 +102,20 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                Phím tắt bàn phím OjGen
+                {lang === 'en' ? 'OjGen Keyboard Shortcuts' : 'Phím tắt bàn phím OjGen'}
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
                   Global Shortcuts
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
-                Thao tác nhanh chóng từ mọi vị trí trong ứng dụng
+                {lang === 'en' ? 'Quick actions from anywhere within the app' : 'Thao tác nhanh chóng từ mọi vị trí trong ứng dụng'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-            title="Đóng (Esc)"
+            title={lang === 'en' ? 'Close (Esc)' : 'Đóng (Esc)'}
           >
             <X className="w-4 h-4" />
           </button>
@@ -178,17 +180,17 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         {/* Modal Footer */}
         <div className="px-6 py-3 border-t border-slate-800 bg-slate-950/70 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
-            <span>Mẹo: Bạn có thể nhấn</span>
+            <span>{lang === 'en' ? 'Tip: You can press' : 'Mẹo: Bạn có thể nhấn'}</span>
             <kbd className="px-1.5 py-0.5 text-[11px] font-mono bg-slate-800 text-slate-200 border border-slate-700 rounded">
               ?
             </kbd>
-            <span>bất kỳ lúc nào để bật bảng này.</span>
+            <span>{lang === 'en' ? 'anytime to show this cheat sheet.' : 'bất kỳ lúc nào để bật bảng này.'}</span>
           </div>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition"
           >
-            Đã hiểu
+            {t('common.close')}
           </button>
         </div>
       </div>

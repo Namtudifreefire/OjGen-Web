@@ -13,9 +13,10 @@ import {
   CheckCircle2,
   Layers,
   Sparkles,
-  Download,
   Keyboard,
+  Globe,
 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface HeaderProps {
   theme: 'dark' | 'light';
@@ -48,6 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
 }) => {
+  const { lang, toggleLang, t } = useLanguage();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
 
@@ -89,13 +91,30 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-[11px] font-mono text-slate-400">v3.3.0</span>
             <span className={`hidden md:inline text-xs ${theme === 'dark' ? 'text-slate-600' : 'text-slate-300'}`}>/</span>
             <span className="text-xs text-slate-400 hidden md:block">
-              Trình tạo &amp; kiểm định bộ test
+              {t('header.tagline')}
             </span>
           </div>
         </div>
 
         {/* Action quick buttons */}
         <div className="flex items-center gap-2">
+          {/* Language Toggle Button */}
+          <button
+            onClick={toggleLang}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md border transition ${
+              theme === 'dark'
+                ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+            }`}
+            title={lang === 'vi' ? 'Switch to English (EN)' : 'Chuyển sang Tiếng Việt (VI)'}
+            aria-label="Toggle language"
+          >
+            <Globe className="w-3.5 h-3.5 text-blue-400" />
+            <span className="font-mono font-semibold text-[11px] uppercase">
+              {lang === 'vi' ? 'VI' : 'EN'}
+            </span>
+          </button>
+
           <button
             onClick={onOpenSetup}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md border transition ${
@@ -103,19 +122,19 @@ export const Header: React.FC<HeaderProps> = ({
                 ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
             }`}
-            title="Thiết lập thông tin bài toán"
+            title={t('header.problemSetup')}
           >
             <Wrench className="w-3.5 h-3.5 text-slate-400" />
-            <span>Thiết lập bài</span>
+            <span>{t('header.problemSetup')}</span>
           </button>
 
           <button
             onClick={onOpenPackage}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 hover:bg-blue-500 text-white transition"
-            title="Đóng gói bài thi (ZIP / Kattis) [Ctrl+B]"
+            title={`${t('header.package')} [Ctrl+B]`}
           >
             <Package className="w-3.5 h-3.5" />
-            <span>Đóng gói</span>
+            <span>{t('header.package')}</span>
           </button>
 
           <button
@@ -125,10 +144,10 @@ export const Header: React.FC<HeaderProps> = ({
                 ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
             }`}
-            title="Phím tắt bàn phím (Ctrl+/ hoặc ?)"
+            title={`${t('header.shortcuts')} (Ctrl+/ / ?)`}
           >
             <Keyboard className="w-3.5 h-3.5 text-slate-400" />
-            <span className="hidden sm:inline">Phím tắt</span>
+            <span className="hidden sm:inline">{t('header.shortcuts')}</span>
           </button>
 
           <button
@@ -138,21 +157,21 @@ export const Header: React.FC<HeaderProps> = ({
                 ? 'text-slate-400 hover:text-slate-100 hover:bg-slate-800 border-slate-700/60'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border-slate-200'
             }`}
-            title="Đổi chủ đề Sáng / Tối"
+            title={t('header.themeToggle')}
           >
             {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
           </button>
         </div>
       </div>
 
-      {/* Menu Bar (Tệp, Công cụ, Trợ giúp) */}
+      {/* Menu Bar (Tệp / File, Công cụ / Tools, Trợ giúp / Help) */}
       <div
         ref={menuBarRef}
         className={`flex items-center gap-1 px-3 py-1 text-xs relative ${
           theme === 'dark' ? 'text-slate-300 bg-slate-900/60' : 'text-slate-600 bg-slate-50'
         }`}
       >
-        {/* Tệp Menu */}
+        {/* Tệp / File Menu */}
         <div className="relative">
           <button
             onClick={() => setActiveMenu(activeMenu === 'file' ? null : 'file')}
@@ -162,7 +181,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : theme === 'dark' ? 'hover:bg-slate-800' : 'hover:bg-slate-200/70'
             }`}
           >
-            Tệp
+            {t('header.fileMenu')}
           </button>
           {activeMenu === 'file' && (
             <div
@@ -178,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <span className="flex items-center gap-2"><Save className="w-3.5 h-3.5" /> Lưu dự án (.ojproject)</span>
+                <span className="flex items-center gap-2"><Save className="w-3.5 h-3.5" /> {t('header.saveProject')}</span>
                 <span className="text-[10px] text-slate-400 font-mono">Ctrl+S</span>
               </button>
               <button
@@ -187,7 +206,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <span className="flex items-center gap-2"><FolderOpen className="w-3.5 h-3.5" /> Mở dự án…</span>
+                <span className="flex items-center gap-2"><FolderOpen className="w-3.5 h-3.5" /> {t('header.openProject')}</span>
                 <span className="text-[10px] text-slate-400 font-mono">Ctrl+O</span>
               </button>
               <div className={`h-px my-1 ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`} />
@@ -197,7 +216,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <FileText className="w-3.5 h-3.5" /> Soạn nội dung đề…
+                <FileText className="w-3.5 h-3.5" /> {t('header.editStatement')}
               </button>
               <button
                 onClick={() => { onOpenPackage(); closeMenu(); }}
@@ -205,14 +224,14 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <span className="flex items-center gap-2"><Package className="w-3.5 h-3.5" /> Đóng gói bài tập…</span>
+                <span className="flex items-center gap-2"><Package className="w-3.5 h-3.5" /> {t('header.packageProblem')}</span>
                 <span className="text-[10px] text-slate-400 font-mono">Ctrl+B</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Công cụ Menu */}
+        {/* Công cụ / Tools Menu */}
         <div className="relative">
           <button
             onClick={() => setActiveMenu(activeMenu === 'tools' ? null : 'tools')}
@@ -222,7 +241,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : theme === 'dark' ? 'hover:bg-slate-800' : 'hover:bg-slate-200/70'
             }`}
           >
-            Công cụ
+            {t('header.toolsMenu')}
           </button>
           {activeMenu === 'tools' && (
             <div
@@ -238,7 +257,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <span className="flex items-center gap-2"><Layers className="w-3.5 h-3.5" /> Kế hoạch nhóm test / Subtasks…</span>
+                <span className="flex items-center gap-2"><Layers className="w-3.5 h-3.5" /> {t('header.testPlan')}</span>
                 <span className="text-[10px] text-slate-400 font-mono">Ctrl+P</span>
               </button>
               <button
@@ -247,7 +266,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <span className="flex items-center gap-2"><RotateCcw className="w-3.5 h-3.5" /> Kiểm thử đối chiếu &amp; Thu nhỏ lỗi</span>
+                <span className="flex items-center gap-2"><RotateCcw className="w-3.5 h-3.5" /> {t('header.differential')}</span>
                 <span className="text-[10px] text-slate-400 font-mono">Ctrl+D</span>
               </button>
               <button
@@ -256,7 +275,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <span className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5" /> Ma trận nhiều lời giải (AC/WA/TLE)</span>
+                <span className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5" /> {t('header.solutionMatrix')}</span>
                 <span className="text-[10px] text-slate-400 font-mono">Ctrl+M</span>
               </button>
               <button
@@ -265,7 +284,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <Play className="w-3.5 h-3.5" /> Quản lý hàng đợi sinh test…
+                <Play className="w-3.5 h-3.5" /> {t('header.queueManager')}
               </button>
               <div className={`h-px my-1 ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`} />
               <button
@@ -274,7 +293,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <Wrench className="w-3.5 h-3.5" /> Tạo khung Validator / Checker…
+                <Wrench className="w-3.5 h-3.5" /> {t('header.scaffolds')}
               </button>
               <button
                 onClick={() => { onRunSelfTest(); closeMenu(); }}
@@ -282,13 +301,13 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white text-emerald-400' : 'hover:bg-emerald-50 text-emerald-600'
                 }`}
               >
-                <CheckCircle2 className="w-3.5 h-3.5" /> Chạy kiểm tra nội bộ (Selftest)
+                <CheckCircle2 className="w-3.5 h-3.5" /> {t('header.runSelfTest')}
               </button>
             </div>
           )}
         </div>
 
-        {/* Trợ giúp Menu */}
+        {/* Trợ giúp / Help Menu */}
         <div className="relative">
           <button
             onClick={() => setActiveMenu(activeMenu === 'help' ? null : 'help')}
@@ -298,7 +317,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : theme === 'dark' ? 'hover:bg-slate-800' : 'hover:bg-slate-200/70'
             }`}
           >
-            Trợ giúp
+            {t('header.helpMenu')}
           </button>
           {activeMenu === 'help' && (
             <div
@@ -314,7 +333,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <span className="flex items-center gap-2"><Keyboard className="w-3.5 h-3.5 text-slate-400" /> Bảng phím tắt bàn phím</span>
+                <span className="flex items-center gap-2"><Keyboard className="w-3.5 h-3.5 text-slate-400" /> {t('header.shortcutsTable')}</span>
                 <span className="text-[10px] text-slate-400 font-mono">?</span>
               </button>
               <button
@@ -323,7 +342,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <HelpCircle className="w-3.5 h-3.5" /> Hướng dẫn sử dụng
+                <HelpCircle className="w-3.5 h-3.5" /> {t('header.docs')}
               </button>
               <div className={`h-px my-1 ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`} />
               <button
@@ -335,7 +354,7 @@ export const Header: React.FC<HeaderProps> = ({
                   theme === 'dark' ? 'hover:bg-blue-600 hover:text-white' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-slate-400" /> Về OjGen Web 3.3.0
+                <Sparkles className="w-3.5 h-3.5 text-slate-400" /> {t('header.about')}
               </button>
             </div>
           )}

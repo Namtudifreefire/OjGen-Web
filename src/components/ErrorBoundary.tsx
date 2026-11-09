@@ -52,6 +52,11 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      let isEn = false;
+      try {
+        isEn = localStorage.getItem('ojgen_lang') === 'en';
+      } catch {}
+
       return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
           <div className="max-w-2xl w-full bg-slate-900 border border-red-500/30 rounded-2xl p-6 shadow-2xl">
@@ -60,9 +65,13 @@ export class ErrorBoundary extends Component<Props, State> {
                 <AlertOctagon className="w-8 h-8" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-100">Đã xảy ra sự cố không mong muốn (Crash Protected)</h1>
+                <h1 className="text-lg font-bold text-slate-100">
+                  {isEn ? 'An unexpected error occurred (Crash Protected)' : 'Đã xảy ra sự cố không mong muốn (Crash Protected)'}
+                </h1>
                 <p className="text-xs text-slate-400">
-                  Hệ thống bảo vệ lỗi đã bắt và cô lập sự cố để ngăn ứng dụng bị treo hoàn toàn.
+                  {isEn
+                    ? 'The crash protection system caught and isolated this error to prevent app instability.'
+                    : 'Hệ thống bảo vệ lỗi đã bắt và cô lập sự cố để ngăn ứng dụng bị treo hoàn toàn.'}
                 </p>
               </div>
             </div>
@@ -84,24 +93,28 @@ export class ErrorBoundary extends Component<Props, State> {
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition"
               >
                 {this.state.copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{this.state.copied ? 'Đã sao chép' : 'Sao chép chi tiết lỗi'}</span>
+                <span>
+                  {this.state.copied
+                    ? (isEn ? 'Copied' : 'Đã sao chép')
+                    : (isEn ? 'Copy Error Details' : 'Sao chép chi tiết lỗi')}
+                </span>
               </button>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={this.handleResetStorage}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs transition"
-                  title="Xóa bộ nhớ cục bộ nếu dữ liệu bị lỗi"
+                  title={isEn ? 'Clear local storage cache and reset' : 'Xóa bộ nhớ cục bộ nếu dữ liệu bị lỗi'}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>Xóa cache &amp; khôi phục</span>
+                  <span>{isEn ? 'Clear Cache & Reset' : 'Xóa cache & khôi phục'}</span>
                 </button>
                 <button
                   onClick={this.handleReload}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs shadow-md transition"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Tải lại trang</span>
+                  <span>{isEn ? 'Reload Page' : 'Tải lại trang'}</span>
                 </button>
               </div>
             </div>

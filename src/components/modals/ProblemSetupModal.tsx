@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Problem, ProblemStatement } from '../../core/types';
-import { X, Wrench, Check } from 'lucide-react';
+import { X, Wrench } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface ProblemSetupModalProps {
   isOpen: boolean;
@@ -17,7 +18,8 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
   statement,
   onChangeStatement,
 }) => {
-  const [name, setName] = useState(statement.name || problem.title);
+  const { lang, t, translateProblemTitle } = useLanguage();
+  const [name, setName] = useState(statement.name || translateProblemTitle(problem.id, problem.title));
   const [code, setCode] = useState(statement.code || problem.id.toUpperCase());
   const [timeLimit, setTimeLimit] = useState(statement.timeLimitMs || 1000);
   const [memoryLimit, setMemoryLimit] = useState(statement.memoryLimitMb || 256);
@@ -41,7 +43,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
             <Wrench className="w-4 h-4 text-blue-400" />
-            <span>Thiết lập hồ sơ bài toán</span>
+            <span>{t('modals.problemSetup.title')}</span>
           </h3>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X className="w-4 h-4" />
@@ -50,7 +52,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
 
         <div className="p-4 space-y-3 text-xs">
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Tên bài toán</label>
+            <label className="block font-medium text-slate-300 mb-1">{t('modals.problemSetup.nameLabel')}</label>
             <input
               type="text"
               value={name}
@@ -60,7 +62,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
           </div>
 
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Mã bài (Code ID)</label>
+            <label className="block font-medium text-slate-300 mb-1">{t('modals.problemSetup.codeLabel')}</label>
             <input
               type="text"
               value={code}
@@ -71,7 +73,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-slate-300 mb-1">Thời gian (ms)</label>
+              <label className="block font-medium text-slate-300 mb-1">{t('modals.problemSetup.timeLimit')}</label>
               <input
                 type="number"
                 value={timeLimit}
@@ -80,7 +82,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
               />
             </div>
             <div>
-              <label className="block font-medium text-slate-300 mb-1">Bộ nhớ (MB)</label>
+              <label className="block font-medium text-slate-300 mb-1">{t('modals.problemSetup.memoryLimit')}</label>
               <input
                 type="number"
                 value={memoryLimit}
@@ -96,13 +98,13 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
             onClick={onClose}
             className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
           >
-            Hủy
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
             className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium"
           >
-            Lưu thiết lập
+            {t('common.save')}
           </button>
         </div>
       </div>

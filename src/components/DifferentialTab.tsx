@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Problem, Config } from '../core/types';
 import { DifferentialTester, DifferentialResult } from '../core/differential';
-import { RotateCcw, Play, AlertCircle, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
+import { RotateCcw, Play, AlertCircle, CheckCircle2, Zap } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface DifferentialTabProps {
   problem: Problem;
@@ -9,11 +10,12 @@ interface DifferentialTabProps {
 }
 
 export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, config }) => {
+  const { t, lang } = useLanguage();
   const [testCount, setTestCount] = useState<number>(50);
   const [minimize, setMinimize] = useState<boolean>(true);
   const [candidateType, setCandidateType] = useState<string>('buggy_sum');
   const [customCode, setCustomCode] = useState<string>(
-    `// Nhận chuỗi input (string), trả về output (string)\nfunction solve(input) {\n  const lines = input.trim().split('\\n');\n  // Thử nghiệm lời giải ứng viên\n  return "0\\n";\n}`
+    `// Receives input (string), returns output (string)\nfunction solve(input) {\n  const lines = input.trim().split('\\n');\n  return "0\\n";\n}`
   );
   const [result, setResult] = useState<DifferentialResult | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -60,7 +62,7 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
           const userFn = new Function('input', `${customCode}\nreturn solve(input);`);
           candidateFn = (input: string) => String(userFn(input));
         } catch (err: any) {
-          setCodeError(`Lỗi cú pháp mã nguồn: ${err.message}`);
+          setCodeError(lang === 'en' ? `Syntax error in code: ${err.message}` : `Lỗi cú pháp mã nguồn: ${err.message}`);
           setIsRunning(false);
           return;
         }
@@ -79,10 +81,10 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
         <div>
           <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
             <RotateCcw className="w-4 h-4 text-slate-400" />
-            <span>Kiểm thử đối chiếu &amp; Thu nhỏ phản ví dụ (Shrinker)</span>
+            <span>{t('differential.title')}</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Chạy đối chiếu lời giải chuẩn với lời giải cần thử trên các test ngẫu nhiên, tự động rút gọn input gây lỗi
+            {t('differential.subtitle')}
           </p>
         </div>
       </div>
@@ -91,12 +93,12 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
         {/* Controls Column */}
         <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-4">
           <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-            Cấu hình kiểm thử
+            {t('differential.configTitle')}
           </h3>
 
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
-              Số lượng test kiểm thử
+              {t('differential.testCountLabel')}
             </label>
             <input
               type="number"
@@ -110,16 +112,20 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
 
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
-              Lời giải ứng viên cần thử
+              {t('differential.candidateLabel')}
             </label>
             <select
               value={candidateType}
               onChange={(e) => setCandidateType(e.target.value)}
               className="w-full text-xs bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 mb-2"
             >
-              <option value="buggy_sum">Mẫu thử 1: Thuật toán có lỗi bỏ sót phần tử (Off-by-one)</option>
-              <option value="overflow">Mẫu thử 2: Lỗi tràn số 32-bit (32-bit int overflow)</option>
-              <option value="custom">Tự viết mã giải JavaScript...</option>
+              <option value="buggy_sum">{t('differential.buggySum')}</option>
+              <option value="overflow">
+                {lang === 'en'
+                  ? 'Sample 2: 32-bit integer overflow bug simulation'
+                  : 'Mẫu thử 2: Lỗi tràn số 32-bit (32-bit int overflow)'}
+              </option>
+              <option value="custom">{t('differential.customCode')}</option>
             </select>
 
             {candidateType === 'custom' && (
@@ -139,7 +145,7 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
               onChange={(e) => setMinimize(e.target.checked)}
               className="rounded bg-slate-950 border-slate-700 text-blue-600 focus:ring-0 w-4 h-4"
             />
-            <span>Tự động thu nhỏ phản ví dụ (Shrinker kích thước/giá trị)</span>
+            <span>{t('differential.shrinkerCheckbox')}</span>
           </label>
 
           {codeError && (
@@ -155,17 +161,25 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
             className="w-full py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-semibold text-xs shadow-md transition flex items-center justify-center gap-2"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>{isRunning ? 'Đang kiểm thử đối chiếu...' : 'Bắt đầu kiểm thử đối chiếu'}</span>
+            <span>{isRunning ? t('differential.runningBtn') : t('differential.startBtn')}</span>
           </button>
         </div>
 
         {/* Results Column */}
         <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col h-[520px]">
           <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider pb-2 border-b border-slate-800 mb-3 flex items-center justify-between">
-            <span>Kết quả đối chiếu</span>
+            <span>{t('differential.resultsTitle')}</span>
             {result && (
-              <span className={`text-xs font-bold px-2 py-0.5 rounded ${result.ok ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                {result.ok ? 'TẤT CẢ KHỚP (OK)' : `PHÁT HIỆN ${result.mismatches} PHẢN VÍ DỤ`}
+              <span
+                className={`text-xs font-bold px-2 py-0.5 rounded ${
+                  result.ok ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                }`}
+              >
+                {result.ok
+                  ? (lang === 'en' ? 'ALL MATCHED (OK)' : 'TẤT CẢ KHỚP (OK)')
+                  : (lang === 'en'
+                      ? `DETECTED ${result.mismatches} COUNTEREXAMPLE(S)`
+                      : `PHÁT HIỆN ${result.mismatches} PHẢN VÍ DỤ`)}
               </span>
             )}
           </h3>
@@ -173,24 +187,40 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
           <div className="flex-1 overflow-auto space-y-3">
             {!result ? (
               <div className="h-full flex items-center justify-center text-slate-500 text-xs italic">
-                Nhấn "Bắt đầu kiểm thử đối chiếu" để chạy so sánh hai lời giải trên {testCount} test ngẫu nhiên.
+                {lang === 'en'
+                  ? `Click "${t('differential.startBtn')}" to compare both solutions on ${testCount} random testcases.`
+                  : `Nhấn "Bắt đầu kiểm thử đối chiếu" để chạy so sánh hai lời giải trên ${testCount} test ngẫu nhiên.`}
               </div>
             ) : result.ok ? (
               <div className="p-8 text-center space-y-2">
                 <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-                <h4 className="text-sm font-semibold text-slate-200">Không tìm thấy phản ví dụ nào!</h4>
+                <h4 className="text-sm font-semibold text-slate-200">
+                  {lang === 'en' ? 'No counterexamples found!' : 'Không tìm thấy phản ví dụ nào!'}
+                </h4>
                 <p className="text-xs text-slate-400">
-                  Cả {result.tested} test ngẫu nhiên đều cho kết quả trùng khớp hoàn toàn giữa lời giải chuẩn và lời giải ứng viên.
+                  {lang === 'en'
+                    ? `All ${result.tested} random testcases produced identical output between reference and candidate.`
+                    : `Cả ${result.tested} test ngẫu nhiên đều cho kết quả trùng khớp hoàn toàn giữa lời giải chuẩn và lời giải ứng viên.`}
                 </p>
               </div>
             ) : (
               result.failures.map((f, idx) => (
                 <div key={idx} className="border border-red-500/30 bg-slate-950 rounded-lg p-3 text-xs space-y-2">
                   <div className="flex items-center justify-between font-semibold text-red-400">
-                    <span>Phản ví dụ #{f.testIndex}: {f.reason}</span>
+                    <span>
+                      {lang === 'en' ? `Counterexample #${f.testIndex}:` : `Phản ví dụ #${f.testIndex}:`}{' '}
+                      {lang === 'en'
+                        ? f.reason.includes('Runtime Error')
+                          ? 'Runtime Error (Exception)'
+                          : 'Wrong Answer (Output Mismatch)'
+                        : f.reason}
+                    </span>
                     {f.minimizationTrials > 0 && (
                       <span className="text-[10px] text-amber-400 font-mono flex items-center gap-1">
-                        <Zap className="w-3 h-3" /> Thu nhỏ sau {f.minimizationTrials} bước
+                        <Zap className="w-3 h-3" />
+                        {lang === 'en'
+                          ? `Shrunk in ${f.minimizationTrials} steps`
+                          : `Thu nhỏ sau ${f.minimizationTrials} bước`}
                       </span>
                     )}
                   </div>
@@ -198,14 +228,18 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
                   {/* Minimized input vs Original */}
                   <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
                     <div>
-                      <span className="text-[10px] text-slate-500 block">Input ban đầu:</span>
+                      <span className="text-[10px] text-slate-500 block">
+                        {lang === 'en' ? 'Original Input:' : 'Input ban đầu:'}
+                      </span>
                       <pre className="p-2 rounded bg-slate-900 border border-slate-800 text-slate-300 max-h-24 overflow-auto whitespace-pre-wrap">
                         {f.input}
                       </pre>
                     </div>
 
                     <div>
-                      <span className="text-[10px] text-amber-400 font-bold block">Input tối giản (Shrunk):</span>
+                      <span className="text-[10px] text-amber-400 font-bold block">
+                        {lang === 'en' ? 'Minimal Input (Shrunk):' : 'Input tối giản (Shrunk):'}
+                      </span>
                       <pre className="p-2 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 max-h-24 overflow-auto whitespace-pre-wrap">
                         {f.minimizedInput}
                       </pre>
@@ -215,11 +249,15 @@ export const DifferentialTab: React.FC<DifferentialTabProps> = ({ problem, confi
                   {/* Outputs compare */}
                   <div className="grid grid-cols-2 gap-2 font-mono text-[11px] pt-1 border-t border-slate-800">
                     <div>
-                      <span className="text-[10px] text-emerald-400 block font-semibold">Lời giải chuẩn (Expected):</span>
+                      <span className="text-[10px] text-emerald-400 block font-semibold">
+                        {lang === 'en' ? 'Reference (Expected):' : 'Lời giải chuẩn (Expected):'}
+                      </span>
                       <pre className="p-1.5 rounded bg-emerald-500/10 text-emerald-300">{f.referenceOutput}</pre>
                     </div>
                     <div>
-                      <span className="text-[10px] text-red-400 block font-semibold">Ứng viên (Got):</span>
+                      <span className="text-[10px] text-red-400 block font-semibold">
+                        {lang === 'en' ? 'Candidate (Got):' : 'Ứng viên (Got):'}
+                      </span>
                       <pre className="p-1.5 rounded bg-red-500/10 text-red-300">{f.candidateOutput}</pre>
                     </div>
                   </div>

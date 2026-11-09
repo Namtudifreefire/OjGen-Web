@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Problem, Config } from '../../core/types';
-import { X, Play, Plus, Trash2, Clock, CheckCircle2 } from 'lucide-react';
+import { X, Play, Plus, Trash2, Clock } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface QueueItem {
   id: string;
@@ -30,6 +31,7 @@ export const QueueModal: React.FC<QueueModalProps> = ({
   currentSeed,
   onExecuteQueue,
 }) => {
+  const { lang, t, translateProblemTitle } = useLanguage();
   const [items, setItems] = useState<QueueItem[]>([
     {
       id: '1',
@@ -67,9 +69,9 @@ export const QueueModal: React.FC<QueueModalProps> = ({
           <div>
             <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
               <Clock className="w-4 h-4 text-blue-400" />
-              <span>Hàng đợi sinh test (Job Queue)</span>
+              <span>{t('modals.queue.title')}</span>
             </h3>
-            <p className="text-xs text-slate-400">Tự động sinh liên tiếp nhiều bài hoặc nhiều bộ seed</p>
+            <p className="text-xs text-slate-400">{t('modals.queue.subtitle')}</p>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X className="w-4 h-4" />
@@ -82,9 +84,11 @@ export const QueueModal: React.FC<QueueModalProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Thêm cấu hình hiện tại</span>
+            <span>{t('modals.queue.addCurrent')}</span>
           </button>
-          <span className="text-xs text-slate-400 font-mono">{items.length} tác vụ</span>
+          <span className="text-xs text-slate-400 font-mono">
+            {lang === 'en' ? `${items.length} task(s)` : `${items.length} tác vụ`}
+          </span>
         </div>
 
         <div className="p-4 flex-1 overflow-auto space-y-2 max-h-[300px]">
@@ -92,10 +96,10 @@ export const QueueModal: React.FC<QueueModalProps> = ({
             <div key={item.id} className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs flex items-center justify-between">
               <div>
                 <span className="font-semibold text-slate-200">
-                  #{idx + 1}. {item.problemTitle}
+                  #{idx + 1}. {translateProblemTitle(item.problemId, item.problemTitle)}
                 </span>
                 <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                  Test: {item.testCount} · Seed: {item.seed}
+                  {lang === 'en' ? 'Tests' : 'Test'}: {item.testCount} · Seed: {item.seed}
                 </div>
               </div>
               <button
@@ -110,14 +114,14 @@ export const QueueModal: React.FC<QueueModalProps> = ({
 
         <div className="p-3 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
           <button onClick={onClose} className="px-3.5 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs">
-            Hủy
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleRunAll}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
-            <span>Chạy toàn bộ hàng đợi ({items.length})</span>
+            <span>{t('modals.queue.runAll', { count: items.length })}</span>
           </button>
         </div>
       </div>

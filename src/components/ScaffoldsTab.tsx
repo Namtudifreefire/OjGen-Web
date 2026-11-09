@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Problem, Config } from '../core/types';
-import { AuthoringScaffolds, ScaffoldTemplate } from '../core/scaffolds';
+import { AuthoringScaffolds } from '../core/scaffolds';
 import { Copy, Download, Code2, Check } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ScaffoldsTabProps {
   problem: Problem;
@@ -9,11 +10,12 @@ interface ScaffoldsTabProps {
 }
 
 export const ScaffoldsTab: React.FC<ScaffoldsTabProps> = ({ problem, config }) => {
-  const templates = AuthoringScaffolds.build(problem, config);
+  const { t, lang } = useLanguage();
+  const templates = AuthoringScaffolds.build(problem, config, lang);
   const [selectedKey, setSelectedKey] = useState<string>(templates[0]?.key || '');
   const [copied, setCopied] = useState<boolean>(false);
 
-  const currentTemplate = templates.find((t) => t.key === selectedKey) || templates[0];
+  const currentTemplate = templates.find((tItem) => tItem.key === selectedKey) || templates[0];
 
   const handleCopy = () => {
     if (!currentTemplate) return;
@@ -40,10 +42,10 @@ export const ScaffoldsTab: React.FC<ScaffoldsTabProps> = ({ problem, config }) =
         <div>
           <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
             <Code2 className="w-4 h-4 text-slate-400" />
-            <span>Tạo khung Validator &amp; Checker (Scaffold Templates)</span>
+            <span>{t('scaffolds.title')}</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Tạo sẵn mã nguồn C++ (Standalone / Testlib) và Python theo đúng khuôn và cấu hình bài hiện tại
+            {t('scaffolds.subtitle')}
           </p>
         </div>
       </div>
@@ -51,7 +53,7 @@ export const ScaffoldsTab: React.FC<ScaffoldsTabProps> = ({ problem, config }) =
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Template List */}
         <div className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
-          <span className="text-xs font-semibold text-slate-400 px-2 py-1">Chọn khung mã nguồn:</span>
+          <span className="text-xs font-semibold text-slate-400 px-2 py-1">{t('scaffolds.selectTemplate')}</span>
           {templates.map((tpl) => (
             <button
               key={tpl.key}
@@ -86,7 +88,7 @@ export const ScaffoldsTab: React.FC<ScaffoldsTabProps> = ({ problem, config }) =
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
                   >
                     {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copied ? 'Đã chép' : 'Sao chép'}</span>
+                    <span>{copied ? t('scaffolds.copiedCode') : t('scaffolds.copyCode')}</span>
                   </button>
 
                   <button
@@ -94,7 +96,7 @@ export const ScaffoldsTab: React.FC<ScaffoldsTabProps> = ({ problem, config }) =
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Tải về file</span>
+                    <span>{t('scaffolds.downloadCode')}</span>
                   </button>
                 </div>
               </div>

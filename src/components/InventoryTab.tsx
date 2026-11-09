@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { GeneratedTestCase, Problem } from '../core/types';
 import { Search, Download, Eye, Network, BarChart2, Grid, Layers } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface InventoryTabProps {
   tests: GeneratedTestCase[];
@@ -8,19 +9,20 @@ interface InventoryTabProps {
 }
 
 export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) => {
+  const { t, lang } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('all');
   const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(tests[0]?.index ?? null);
   const [viewMode, setViewMode] = useState<'text' | 'visualize'>('text');
 
-  const groups = Array.from(new Set(tests.map((t) => t.groupName)));
+  const groups = Array.from(new Set(tests.map((tItem) => tItem.groupName)));
 
-  const filteredTests = tests.filter((t) => {
-    const matchesGroup = selectedGroup === 'all' || t.groupName === selectedGroup;
+  const filteredTests = tests.filter((tItem) => {
+    const matchesGroup = selectedGroup === 'all' || tItem.groupName === selectedGroup;
     const matchesSearch =
       searchTerm === '' ||
-      t.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      tItem.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tItem.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesGroup && matchesSearch;
   });
 
@@ -58,12 +60,12 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
   const renderGraphVisualizer = (input: string) => {
     const lines = input.trim().split('\n');
     if (lines.length < 1) return null;
-    const [nStr, mStr] = lines[0].trim().split(/\s+/);
+    const [nStr] = lines[0].trim().split(/\s+/);
     const n = parseInt(nStr, 10);
     if (isNaN(n) || n > 100) {
       return (
         <div className="p-4 text-xs text-amber-400 bg-amber-500/10 rounded-lg">
-          Đồ thị có {n} đỉnh (quá lớn để hiển thị trực quan trực tiếp).
+          {t('inventory.graphTooLarge', { count: n || 0 })}
         </div>
       );
     }
@@ -143,7 +145,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
     if (isNaN(rows) || isNaN(cols) || rows > 30 || cols > 30) {
       return (
         <div className="p-4 text-xs text-amber-400 bg-amber-500/10 rounded-lg">
-          Lưới kích thước {rows}×{cols} vượt giới hạn hiển thị chi tiết (≤ 30×30).
+          {t('inventory.gridTooLarge', { rows: rows || 0, cols: cols || 0 })}
         </div>
       );
     }
@@ -202,7 +204,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
       <div className="p-4 bg-slate-950 rounded-lg border border-slate-800">
         <h4 className="text-xs font-semibold text-slate-300 mb-3 flex items-center gap-1.5">
           <BarChart2 className="w-3.5 h-3.5 text-blue-400" />
-          Phân phối tần số {numbers.length} giá trị ([{min} .. {max}])
+          {t('inventory.distributionTitle', { count: numbers.length, min, max })}
         </h4>
         <div className="flex items-end gap-1.5 h-32 pt-4">
           {counts.map((c, i) => (
@@ -226,8 +228,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
         <div>
           <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
             <Layers className="w-4 h-4 text-slate-400" />
-            <span>Kiểm kê &amp; Trực quan hóa bộ test</span>
-            <span className="text-xs font-normal text-slate-400">({tests.length} test hiện có)</span>
+            <span>{t('inventory.title')}</span>
+            <span className="text-xs font-normal text-slate-400">
+              {t('inventory.testsCount', { count: tests.length })}
+            </span>
           </h2>
         </div>
 
@@ -237,7 +241,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
             <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
             <input
               type="text"
-              placeholder="Tìm theo tên/nhãn..."
+              placeholder={t('inventory.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="text-xs bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-slate-200 focus:outline-none focus:border-blue-500 w-44 font-mono"
@@ -250,7 +254,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
             onChange={(e) => setSelectedGroup(e.target.value)}
             className="text-xs bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-blue-500"
           >
-            <option value="all">Tất cả nhóm</option>
+            <option value="all">{t('inventory.allGroups')}</option>
             {groups.map((g) => (
               <option key={g} value={g}>
                 {g}
@@ -265,31 +269,32 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 border border-slate-700 transition"
           >
             <Download className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Xuất CSV</span>
+            <span>{t('inventory.exportCsv')}</span>
           </button>
         </div>
       </div>
 
       {tests.length === 0 ? (
         <div className="p-12 text-center text-slate-500 text-sm bg-slate-900 border border-slate-800 rounded-xl">
-          Chưa có test nào được tạo. Hãy sang tab "Tạo bộ test" và bấm "▶ Tạo bộ test".
+          <div className="font-semibold text-slate-400 mb-1">{t('inventory.emptyTitle')}</div>
+          <div>{t('inventory.emptyDesc')}</div>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Tests List column */}
           <div className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col h-[520px]">
             <div className="text-xs font-semibold text-slate-400 pb-2 border-b border-slate-800 mb-2 flex justify-between">
-              <span>Danh sách test ({filteredTests.length})</span>
-              <span>Dung lượng</span>
+              <span>{t('inventory.listTitle', { count: filteredTests.length })}</span>
+              <span>{t('inventory.sizeTitle')}</span>
             </div>
 
             <div className="flex-1 overflow-auto space-y-1">
-              {filteredTests.map((t) => {
-                const isSelected = selectedTest?.index === t.index;
+              {filteredTests.map((tItem) => {
+                const isSelected = selectedTest?.index === tItem.index;
                 return (
                   <div
-                    key={t.index}
-                    onClick={() => setSelectedTestIndex(t.index)}
+                    key={tItem.index}
+                    onClick={() => setSelectedTestIndex(tItem.index)}
                     className={`p-2 rounded-lg cursor-pointer text-xs flex items-center justify-between border transition ${
                       isSelected
                         ? 'bg-blue-600/20 border-blue-500 text-blue-200'
@@ -298,20 +303,20 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                   >
                     <div>
                       <div className="font-mono font-semibold flex items-center gap-1.5">
-                        <span>{t.fileName}</span>
+                        <span>{tItem.fileName}</span>
                         <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">
-                          {t.groupName}
+                          {tItem.groupName}
                         </span>
                       </div>
                       <div className="flex gap-1 mt-1">
-                        {t.tags.map((tag) => (
+                        {tItem.tags.map((tag) => (
                           <span key={tag} className="text-[9px] px-1 rounded bg-slate-800/90 text-blue-400 font-mono">
                             #{tag}
                           </span>
                         ))}
                       </div>
                     </div>
-                    <span className="font-mono text-[11px] text-slate-500">{t.bytes} B</span>
+                    <span className="font-mono text-[11px] text-slate-500">{tItem.bytes} B</span>
                   </div>
                 );
               })}
@@ -329,7 +334,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                       <span>{selectedTest.fileName} ({selectedTest.groupName})</span>
                     </h3>
                     <p className="text-[11px] text-slate-400 font-mono">
-                      Seed: {selectedTest.seed} · Dung lượng: {selectedTest.bytes} bytes
+                      {t('inventory.seedLabel')}: {selectedTest.seed} · {t('inventory.sizeLabel')}: {selectedTest.bytes} bytes
                     </p>
                   </div>
 
@@ -341,7 +346,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                         viewMode === 'text' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
                       }`}
                     >
-                      Văn bản (.inp / .out)
+                      {t('inventory.textMode')}
                     </button>
                     <button
                       onClick={() => setViewMode('visualize')}
@@ -349,7 +354,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                         viewMode === 'visualize' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
                       }`}
                     >
-                      Trực quan hóa
+                      {t('inventory.visualMode')}
                     </button>
                   </div>
                 </div>
@@ -359,7 +364,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                     {/* Input View */}
                     <div className="flex flex-col h-full">
                       <span className="text-xs font-mono font-medium text-slate-400 mb-1">
-                        Dữ liệu vào (.inp)
+                        {t('inventory.inputTitle')}
                       </span>
                       <pre className="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-3 overflow-auto text-xs font-mono text-emerald-400 leading-relaxed">
                         {selectedTest.input}
@@ -369,7 +374,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                     {/* Output View */}
                     <div className="flex flex-col h-full">
                       <span className="text-xs font-mono font-medium text-slate-400 mb-1">
-                        Đáp án chuẩn (.out)
+                        {t('inventory.outputTitle')}
                       </span>
                       <pre className="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-3 overflow-auto text-xs font-mono text-blue-400 leading-relaxed">
                         {selectedTest.output}
@@ -386,7 +391,9 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                       renderArrayHistogram(selectedTest.input)
                     ) : (
                       <div className="p-8 text-center text-slate-500 text-xs italic">
-                        Khuôn bài này hiển thị trực quan thông qua phân phối số liệu hoặc bảng văn bản.
+                        {lang === 'en'
+                          ? 'This problem template is best inspected via the text tab or value distributions.'
+                          : 'Khuôn bài này hiển thị trực quan thông qua phân phối số liệu hoặc bảng văn bản.'}
                       </div>
                     )}
                   </div>
@@ -394,7 +401,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
               </>
             ) : (
               <div className="h-full flex items-center justify-center text-slate-500 text-xs italic">
-                Chọn một test từ danh sách bên trái để kiểm tra
+                {t('inventory.selectHint')}
               </div>
             )}
           </div>

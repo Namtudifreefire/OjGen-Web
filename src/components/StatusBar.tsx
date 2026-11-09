@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface StatusBarProps {
   status: string;
@@ -6,6 +7,7 @@ interface StatusBarProps {
   seed: string;
   testCount: number;
   problemTitle: string;
+  problemId?: string;
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({
@@ -14,7 +16,18 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   seed,
   testCount,
   problemTitle,
+  problemId,
 }) => {
+  const { t, translateProblemTitle, lang } = useLanguage();
+
+  const displayProblemTitle = problemId
+    ? translateProblemTitle(problemId, problemTitle)
+    : problemTitle;
+
+  const displayStatus = status === 'Sẵn sàng' || status === 'Ready'
+    ? t('statusBar.ready')
+    : status;
+
   return (
     <footer className={`border-t px-4 py-1.5 text-xs flex items-center justify-between select-none transition-colors ${
       theme === 'dark'
@@ -24,20 +37,22 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       <div className="flex items-center gap-3">
         <span className={`flex items-center gap-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${theme === 'dark' ? 'bg-slate-400' : 'bg-slate-500'}`} />
-          <span>{status}</span>
+          <span>{displayStatus}</span>
         </span>
         <span className={`hidden md:inline ${theme === 'dark' ? 'text-slate-600' : 'text-slate-300'}`}>·</span>
         <span className={`hidden md:inline font-mono ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
-          Khuôn: <span className={`font-semibold ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>{problemTitle}</span>
+          {t('statusBar.template')}: <span className={`font-semibold ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>{displayProblemTitle}</span>
         </span>
       </div>
 
       <div className={`flex items-center gap-3 text-[11px] font-mono ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-        <span>Seed: {seed || 'Ngẫu nhiên'}</span>
+        <span>{t('statusBar.seed')}: {seed || t('common.random')}</span>
         <span className={theme === 'dark' ? 'text-slate-600' : 'text-slate-300'}>·</span>
-        <span>Test: {testCount}</span>
+        <span>{t('statusBar.test')}: {testCount}</span>
         <span className={theme === 'dark' ? 'text-slate-600' : 'text-slate-300'}>·</span>
-        <span>{theme === 'dark' ? 'Chủ đề: Tối' : 'Chủ đề: Sáng'}</span>
+        <span>{theme === 'dark' ? t('statusBar.themeDark') : t('statusBar.themeLight')}</span>
+        <span className={theme === 'dark' ? 'text-slate-600' : 'text-slate-300'}>·</span>
+        <span className="font-semibold">{t('statusBar.lang')}</span>
       </div>
     </footer>
   );
