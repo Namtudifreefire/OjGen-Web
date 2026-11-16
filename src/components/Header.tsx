@@ -18,6 +18,7 @@ import {
   FileCode,
   Terminal,
   Keyboard,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { Button } from './ui/Button';
@@ -204,6 +205,8 @@ const DropdownMenu: React.FC<{
 
 interface HeaderProps {
   theme: 'dark' | 'light';
+  interfaceMode: 'classic' | 'preview';
+  onChangeInterfaceMode: (mode: 'classic' | 'preview') => void;
   onToggleTheme: () => void;
   onSaveProject: () => void;
   onOpenProject: () => void;
@@ -225,6 +228,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   theme,
+  interfaceMode,
+  onChangeInterfaceMode,
   onToggleTheme,
   onSaveProject,
   onOpenProject,
@@ -243,7 +248,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
 }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const fileMenuItems: MenuItem[] = [
     { label: t('header.saveProject'), icon: <Save className="w-4 h-4" />, shortcut: 'Ctrl+S', action: onSaveProject },
@@ -352,6 +357,18 @@ export const Header: React.FC<HeaderProps> = ({
           </Button>
 
           <LanguageSwitcher />
+
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<LayoutDashboard className="w-3.5 h-3.5" />}
+            onClick={() => onChangeInterfaceMode(interfaceMode === 'classic' ? 'preview' : 'classic')}
+            aria-label={language === 'en'
+              ? `Interface: ${interfaceMode === 'classic' ? 'Classic' : 'Preview'}. Switch interface`
+              : `Giao diện: ${interfaceMode === 'classic' ? 'Thường' : 'Preview'}. Chuyển giao diện`}
+          >
+            {language === 'en' ? 'Interface' : 'Giao diện'}: {interfaceMode === 'classic' ? (language === 'en' ? 'Classic' : 'Thường') : 'Preview'}
+          </Button>
 
           <Button
             variant="ghost"

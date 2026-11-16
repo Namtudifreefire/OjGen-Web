@@ -526,6 +526,8 @@ function AppContent() {
     >
       <Header
         theme={theme}
+        interfaceMode={interfaceMode}
+        onChangeInterfaceMode={changeInterfaceMode}
         onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         onSaveProject={handleSaveProject}
         onOpenProject={handleOpenProject}
