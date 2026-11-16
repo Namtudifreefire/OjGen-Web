@@ -51,13 +51,13 @@ export const ALGORITHM_TOPICS: AlgorithmTopic[] = [
   { category: 'Quy hoạch động', name: 'Quy hoạch động chữ số (Digit DP)', recommendedProblemId: 'single_n', source: 'VNOI' },
 
   // Thuật toán & Kỹ năng khác
-  { category: 'Thuật thuật & Kỹ năng', name: 'Tìm kiếm nhị phân (Binary Search)', recommendedProblemId: 'array', source: 'LQDOJ' },
-  { category: 'Thuật thuật & Kỹ năng', name: 'Hai con trỏ (Two Pointers)', recommendedProblemId: 'array', source: 'LQDOJ' },
-  { category: 'Thuật thuật & Kỹ năng', name: 'Tham lam (Greedy)', recommendedProblemId: 'pairs', source: 'LQDOJ' },
-  { category: 'Thuật thuật & Kỹ năng', name: 'Sắp xếp & Rời rạc hóa', recommendedProblemId: 'array', source: 'LTOJ' },
-  { category: 'Thuật thuật & Kỹ năng', name: 'Nhân ma trận số học', recommendedProblemId: 'matrix', source: 'DMOJ' },
-  { category: 'Thuật thuật & Kỹ năng', name: 'Toán học & Lý thuyết số (SNT, Ước, Modular)', recommendedProblemId: 'single_n', source: 'Codeforces', exampleProblem: '1360A' },
-  { category: 'Thuật thuật & Kỹ năng', name: 'Nhiều test con (Multi-case)', recommendedProblemId: 'multi_test', source: 'Codeforces', exampleProblem: '1800A' },
+  { category: 'Thuật toán & Kỹ năng', name: 'Tìm kiếm nhị phân (Binary Search)', recommendedProblemId: 'array', source: 'LQDOJ' },
+  { category: 'Thuật toán & Kỹ năng', name: 'Hai con trỏ (Two Pointers)', recommendedProblemId: 'array', source: 'LQDOJ' },
+  { category: 'Thuật toán & Kỹ năng', name: 'Tham lam (Greedy)', recommendedProblemId: 'pairs', source: 'LQDOJ' },
+  { category: 'Thuật toán & Kỹ năng', name: 'Sắp xếp & Rời rạc hóa', recommendedProblemId: 'array', source: 'LTOJ' },
+  { category: 'Thuật toán & Kỹ năng', name: 'Nhân ma trận số học', recommendedProblemId: 'matrix', source: 'DMOJ' },
+  { category: 'Thuật toán & Kỹ năng', name: 'Toán học & Lý thuyết số (SNT, Ước, Modular)', recommendedProblemId: 'single_n', source: 'Codeforces', exampleProblem: '1360A' },
+  { category: 'Thuật toán & Kỹ năng', name: 'Nhiều test con (Multi-case)', recommendedProblemId: 'multi_test', source: 'Codeforces', exampleProblem: '1800A' },
 ];
 
 export function getTopicUrl(topic: AlgorithmTopic): string | null {

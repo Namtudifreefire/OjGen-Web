@@ -1,378 +1,424 @@
-import React, { useState } from 'react';
-import { ProblemStatement, Problem, Config } from '../core/types';
-import { FileText, CheckCircle2, AlertTriangle, Play, Copy, Plus, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../i18n';
+import { Problem, ProblemStatement } from '../core/types';
+import { Save, FileText, Eye, RotateCcw, Download, Upload, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Card, CardHeader, CardDivider, CardFooter } from './ui/Card';
+import { Input, Textarea, Select } from './ui/Input';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
 
 interface StatementTabProps {
   statement: ProblemStatement;
-  onChangeStatement: (s: ProblemStatement) => void;
+  onChangeStatement: (stmt: ProblemStatement) => void;
   problem: Problem;
-  config: Config;
 }
 
-export const StatementTab: React.FC<StatementTabProps> = ({
-  statement,
-  onChangeStatement,
-  problem,
-  config,
-}) => {
-  const [activeSubTab, setActiveSubTab] = useState<'edit' | 'preview'>('edit');
-  const [consistencyIssues, setConsistencyIssues] = useState<string[]>([]);
+const LANGUAGES = [
+  { value: 'vi', label: 'Tiếng Việt' },
+  { value: 'en', label: 'English' },
+];
 
-  // Check consistency between statement constraints & generator configuration
-  const runConsistencyCheck = () => {
-    const issues: string[] = [];
-    const text = (statement.description + ' ' + statement.constraints).toLowerCase();
+// Pre-defined icons to avoid JSX-in-props parsing issues
+const saveIcon = <Save className="w-3.5 h-3.5" />;
+const fileTextIcon = <FileText className="w-4 h-4" />;
+const eyeIcon = <Eye className="w-4 h-4" />;
+const rotateCcwIcon = <RotateCcw className="w-4 h-4" />;
+const downloadIcon = <Download className="w-3.5 h-3.5" />;
+const checkCircleIcon = <CheckCircle2 className="w-3.5 h-3.5" />;
+const alertCircleIcon = <AlertCircle className="w-3.5 h-3.5" />;
 
-    // Check N
-    if (problem.params.some((p) => p.key === 'maxN')) {
-      const maxN = config.get('maxN');
-      if (text.includes('10^6') || text.includes('1000000')) {
-        if (maxN < 1000000n) {
-          issues.push(`Đề bài nêu N ≤ 10^6 nhưng cấu hình generator maxN chỉ là ${maxN}.`);
-        }
-      }
-      if (text.includes('10^5') || text.includes('100000')) {
-        if (maxN < 100000n) {
-          issues.push(`Đề bài nêu N ≤ 10^5 nhưng cấu hình generator maxN chỉ là ${maxN}.`);
-        }
-      }
-    }
+export const StatementTab: React.FC<StatementTabProps> = ({ statement, onChangeStatement, problem }) => {
+  const { language } = useTranslation();
+  const text = (vi: string, en: string) => language === 'en' ? en : vi;
+  const [activeSection, setActiveSection] = useState<'main' | 'samples' | 'limits' | 'metadata'>('main');
+  const [previewMode, setPreviewMode] = useState<'split' | 'preview' | 'editor'>('split');
+  const [localStatement, setLocalStatement] = useState(statement);
+  useEffect(() => setLocalStatement(statement), [statement]);
 
-    // Check sample tests
-    if (statement.samples.length === 0) {
-      issues.push('Đề bài chưa có ví dụ (sample test case).');
-    } else {
-      for (let i = 0; i < statement.samples.length; i++) {
-        const s = statement.samples[i];
-        if (!s.input.trim()) {
-          issues.push(`Ví dụ ${i + 1} có input rỗng.`);
-        } else {
-          const valErr = problem.validateInput(s.input.endsWith('\n') ? s.input : s.input + '\n', config);
-          if (valErr) {
-            issues.push(`Ví dụ ${i + 1}: Input không thỏa mãn khuôn: ${valErr}`);
-          }
-        }
-      }
-    }
-
-    setConsistencyIssues(issues);
+  const updateField = <K extends keyof ProblemStatement>(field: K, value: ProblemStatement[K]) => {
+    const next = { ...localStatement, [field]: value };
+    setLocalStatement(next);
+    onChangeStatement(next);
   };
 
-  // Add sample test
-  const addSample = () => {
-    onChangeStatement({
-      ...statement,
-      samples: [
-        ...statement.samples,
-        { input: '', output: '', explanation: '' },
-      ],
-    });
+  const handleAddSample = () => {
+    const next = {
+      ...localStatement,
+      samples: [...localStatement.samples, { input: '', output: '', explanation: '' }],
+    };
+    setLocalStatement(next);
+    onChangeStatement(next);
   };
 
-  // Run solver on sample input
-  const autoSolveSample = (index: number) => {
-    const s = statement.samples[index];
-    if (!s.input.trim()) return;
-    try {
-      const inp = s.input.endsWith('\n') ? s.input : s.input + '\n';
-      const out = problem.solve(inp, config);
-      const nextSamples = [...statement.samples];
-      nextSamples[index] = { ...s, output: out.trim() };
-      onChangeStatement({ ...statement, samples: nextSamples });
-    } catch (e: any) {
-      alert(`Lỗi chạy lời giải: ${e.message}`);
-    }
+  const handleRemoveSample = (index: number) => {
+    const next = {
+      ...localStatement,
+      samples: localStatement.samples.filter((_, i) => i !== index),
+    };
+    setLocalStatement(next);
+    onChangeStatement(next);
   };
 
-  return (
-    <div className="max-w-7xl mx-auto p-4 flex flex-col gap-4">
-      {/* Top Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-        <div>
-          <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-blue-400" />
-            <span>✍ Soạn thảo đề bài (Problem Statement)</span>
-          </h2>
-          <p className="text-xs text-slate-400">
-            Hỗ trợ định dạng đề thi chuẩn VNOI, QBOJ, Codeforces, Kattis
-          </p>
-        </div>
+  const handleSampleChange = (index: number, field: 'input' | 'output' | 'explanation', value: string) => {
+    const next = {
+      ...localStatement,
+      samples: localStatement.samples.map((s, i) => (i === index ? { ...s, [field]: value } : s)),
+    };
+    setLocalStatement(next);
+    onChangeStatement(next);
+  };
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={runConsistencyCheck}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Kiểm tra nhất quán với cấu hình</span>
-          </button>
+  const exportMarkdown = () => {
+    const md = `# ${localStatement.name}
 
-          <div className="flex p-0.5 rounded-lg bg-slate-950 border border-slate-800 text-xs">
-            <button
-              onClick={() => setActiveSubTab('edit')}
-              className={`px-3 py-1 rounded font-medium transition ${
-                activeSubTab === 'edit' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Chỉnh sửa
-            </button>
-            <button
-              onClick={() => setActiveSubTab('preview')}
-              className={`px-3 py-1 rounded font-medium transition ${
-                activeSubTab === 'preview' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Xem trước đề
-            </button>
-          </div>
+**${text('Mã bài', 'Problem code')}:** \`${localStatement.code}\`
+
+## ${text('Mô tả', 'Description')}
+${localStatement.description}
+
+## ${text('Định dạng input', 'Input format')}
+${localStatement.inputFormat}
+
+## ${text('Định dạng output', 'Output format')}
+${localStatement.outputFormat}
+
+## ${text('Ràng buộc', 'Constraints')}
+${localStatement.constraints}
+
+## ${text('Ví dụ', 'Samples')}
+${localStatement.samples.map((s, i) => `
+### ${text('Ví dụ', 'Sample')} ${i + 1}
+**Input:**
+\`\`\`
+${s.input}
+\`\`\`
+
+**Output:**
+\`\`\`
+${s.output}
+\`\`\`
+
+${s.explanation ? `**${text('Giải thích', 'Explanation')}:** ${s.explanation}` : ''}
+`).join('')}
+
+---
+*Generated by OjGen 3.3.0*
+`;
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${localStatement.code || problem.id}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const sections = [
+    { id: 'main', label: text("Nội dung chính", "Main content"), icon: FileText },
+    { id: 'samples', label: text("Ví dụ mẫu", "Samples"), icon: Eye },
+    { id: 'limits', label: text("Giới hạn", "Limits"), icon: RotateCcw },
+    { id: 'metadata', label: text("Thông tin bài", "Problem info"), icon: CheckCircle2 },
+  ];
+
+  const renderMainSection = () => (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-4)' }}>
+      <div>
+        <Input
+          label={text("Tên bài toán", "Problem name")}
+          value={localStatement.name}
+          onChange={(e) => updateField('name', e.target.value)}
+          fullWidth
+          placeholder={text("Ví dụ: Tổng mảng số nguyên", "e.g. Sum of an integer array")}
+        />
+        <Input
+          label={text("Mã bài (Code)", "Problem code")}
+          value={localStatement.code}
+          onChange={(e) => updateField('code', e.target.value.toUpperCase())}
+          fullWidth
+          placeholder="SUMARR"
+          helperText={text("Chỉ chữ cái in hoa, số, không dấu cách", "Uppercase letters and numbers only; no spaces")}
+        />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-3)' }}>
+          <Input
+            label={text("Giới hạn thời gian (ms)", "Time Limit (ms)")}
+            type="number"
+            value={localStatement.timeLimitMs}
+            onChange={(e) => updateField('timeLimitMs', parseInt(e.target.value) || 1000)}
+            fullWidth
+          />
+          <Input
+            label={text("Giới hạn bộ nhớ (MB)", "Memory Limit (MB)")}
+            type="number"
+            value={localStatement.memoryLimitMb}
+            onChange={(e) => updateField('memoryLimitMb', parseInt(e.target.value) || 256)}
+            fullWidth
+          />
         </div>
       </div>
 
-      {/* Consistency Issues Banner */}
-      {consistencyIssues.length > 0 && (
-        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs space-y-1">
-          <div className="flex items-center gap-1.5 font-semibold text-amber-400">
-            <AlertTriangle className="w-4 h-4" />
-            <span>Phát hiện {consistencyIssues.length} điểm chưa nhất quán:</span>
-          </div>
-          <ul className="list-disc list-inside pl-1 space-y-0.5 text-slate-300">
-            {consistencyIssues.map((issue, idx) => (
-              <li key={idx}>{issue}</li>
-            ))}
-          </ul>
+      <div>
+        <Textarea
+          label={text("Mô tả bài toán", "Problem description")}
+          value={localStatement.description}
+          onChange={(e) => updateField('description', e.target.value)}
+          rows={4}
+          fullWidth
+          placeholder={text("Mô tả chi tiết bài toán...", "Describe the problem...")}
+        />
+        <Textarea
+          label={text("Định dạng Input", "Input format")}
+          value={localStatement.inputFormat}
+          onChange={(e) => updateField('inputFormat', e.target.value)}
+          rows={4}
+          fullWidth
+          placeholder={text("Mô tả cấu trúc input...", "Describe the input format...")}
+        />
+        <Textarea
+          label={text("Định dạng Output", "Output format")}
+          value={localStatement.outputFormat}
+          onChange={(e) => updateField('outputFormat', e.target.value)}
+          rows={3}
+          fullWidth
+          placeholder={text("Mô tả cấu trúc output...", "Describe the output format...")}
+        />
+        <Textarea
+          label={text("Ràng buộc", "Constraints")}
+          value={localStatement.constraints}
+          onChange={(e) => updateField('constraints', e.target.value)}
+          rows={3}
+          fullWidth
+          placeholder={text("Các ràng buộc về N, giá trị, độ phức tạp...", "Constraints on N, values and complexity...")}
+        />
+      </div>
+    </div>
+  );
+
+  const renderSamplesSection = () => {
+    return (
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-3)' }}>
+          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--surface-text-secondary)' }}>
+            {localStatement.samples.length} {text('ví dụ mẫu', 'samples')}
+          </span>
+          <Button variant="secondary" size="sm" leftIcon={checkCircleIcon} onClick={handleAddSample}>
+            {text("Thêm ví dụ", "Add sample")}
+          </Button>
         </div>
-      )}
 
-      {activeSubTab === 'edit' ? (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          {/* Metadata */}
-          <div className="md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Tên bài toán</label>
-              <input
-                type="text"
-                value={statement.name}
-                onChange={(e) => onChangeStatement({ ...statement, name: e.target.value })}
-                className="w-full text-xs bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Mã bài (Code)</label>
-              <input
-                type="text"
-                value={statement.code}
-                onChange={(e) => onChangeStatement({ ...statement, code: e.target.value.toUpperCase() })}
-                className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Giới hạn thời gian (ms)</label>
-              <input
-                type="number"
-                value={statement.timeLimitMs}
-                onChange={(e) => onChangeStatement({ ...statement, timeLimitMs: parseInt(e.target.value, 10) || 1000 })}
-                className="w-full text-xs font-mono bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Giới hạn bộ nhớ (MB)</label>
-              <input
-                type="number"
-                value={statement.memoryLimitMb}
-                onChange={(e) => onChangeStatement({ ...statement, memoryLimitMb: parseInt(e.target.value, 10) || 256 })}
-                className="w-full text-xs font-mono bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-blue-500"
-              />
-            </div>
+        {localStatement.samples.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 'var(--spacing-8)', color: 'var(--surface-text-muted)', backgroundColor: 'var(--surface-sunken)', border: '1px dashed var(--surface-border)', borderRadius: 'var(--radius-default)' }}>
+            {eyeIcon}
+            <p>{text("Chưa có ví dụ mẫu", "No samples yet")}</p>
+            <p style={{ fontSize: 'var(--text-xs)', marginTop: 'var(--spacing-1)' }}>{text('Nhấn “Thêm ví dụ” để bắt đầu', 'Select “Add sample” to get started')}</p>
           </div>
-
-          {/* Description & Constraints */}
-          <div className="md:col-span-8 flex flex-col gap-3">
-            <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
-              <label className="block text-xs font-semibold text-slate-200 mb-1">Mô tả đề bài (Description)</label>
-              <textarea
-                rows={6}
-                value={statement.description}
-                onChange={(e) => onChangeStatement({ ...statement, description: e.target.value })}
-                placeholder="Nhập nội dung đề bài..."
-                className="w-full text-xs bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-blue-500 leading-relaxed font-sans"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
-                <label className="block text-xs font-semibold text-slate-200 mb-1">Dữ liệu vào (Input Format)</label>
-                <textarea
-                  rows={4}
-                  value={statement.inputFormat}
-                  onChange={(e) => onChangeStatement({ ...statement, inputFormat: e.target.value })}
-                  className="w-full text-xs bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-blue-500 leading-relaxed font-sans"
-                />
-              </div>
-
-              <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
-                <label className="block text-xs font-semibold text-slate-200 mb-1">Dữ liệu ra (Output Format)</label>
-                <textarea
-                  rows={4}
-                  value={statement.outputFormat}
-                  onChange={(e) => onChangeStatement({ ...statement, outputFormat: e.target.value })}
-                  className="w-full text-xs bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-blue-500 leading-relaxed font-sans"
-                />
-              </div>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
-              <label className="block text-xs font-semibold text-slate-200 mb-1">Ràng buộc (Constraints)</label>
-              <textarea
-                rows={3}
-                value={statement.constraints}
-                onChange={(e) => onChangeStatement({ ...statement, constraints: e.target.value })}
-                className="w-full text-xs bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-blue-500 leading-relaxed font-sans"
-              />
-            </div>
-          </div>
-
-          {/* Sample Tests */}
-          <div className="md:col-span-4 bg-slate-900 border border-slate-800 p-3.5 rounded-xl flex flex-col">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800 mb-2">
-              <span className="text-xs font-semibold text-slate-200">Ví dụ (Sample Tests)</span>
-              <button
-                onClick={addSample}
-                className="flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium transition"
-              >
-                <Plus className="w-3 h-3" /> Thêm ví dụ
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-auto space-y-3">
-              {statement.samples.map((s, idx) => (
-                <div key={idx} className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-slate-300">Ví dụ {idx + 1}</span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => autoSolveSample(idx)}
-                        className="p-1 text-slate-400 hover:text-emerald-400 transition"
-                        title="Tự động tính output bằng lời giải chuẩn"
-                      >
-                        <Play className="w-3 h-3 fill-current" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          const nextSamples = statement.samples.filter((_, i) => i !== idx);
-                          onChangeStatement({ ...statement, samples: nextSamples });
-                        }}
-                        className="p-1 text-slate-400 hover:text-red-400 transition"
-                        title="Xóa ví dụ"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div>
-                      <span className="text-[10px] text-slate-500 font-mono">Input:</span>
-                      <textarea
-                        rows={2}
-                        value={s.input}
-                        onChange={(e) => {
-                          const next = [...statement.samples];
-                          next[idx] = { ...s, input: e.target.value };
-                          onChangeStatement({ ...statement, samples: next });
-                        }}
-                        className="w-full text-xs font-mono bg-slate-900 border border-slate-800 rounded p-1.5 text-slate-200"
-                      />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 font-mono">Output:</span>
-                      <textarea
-                        rows={2}
-                        value={s.output}
-                        onChange={(e) => {
-                          const next = [...statement.samples];
-                          next[idx] = { ...s, output: e.target.value };
-                          onChangeStatement({ ...statement, samples: next });
-                        }}
-                        className="w-full text-xs font-mono bg-slate-900 border border-slate-800 rounded p-1.5 text-blue-400"
-                      />
-                    </div>
-                  </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-3)' }}>
+            {localStatement.samples.map((sample, idx) => (
+              <Card key={idx} style={{ backgroundColor: 'var(--surface-overlay)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-3)' }}>
+                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--surface-text-primary)' }}>
+                    {text('Ví dụ', 'Sample')} {idx + 1}
+                  </span>
+                  {localStatement.samples.length > 1 && (
+                    <Button variant="ghost" size="sm" onClick={() => handleRemoveSample(idx)}>
+                      {alertCircleIcon}
+                    </Button>
+                  )}
                 </div>
-              ))}
-            </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-3)' }}>
+                  <Textarea
+                    label="Input"
+                    value={sample.input}
+                    onChange={(e) => handleSampleChange(idx, 'input', e.target.value)}
+                    rows={5}
+                    fullWidth
+                    placeholder={text("Dữ liệu đầu vào...", "Input data...")}
+                  />
+                  <Textarea
+                    label="Output"
+                    value={sample.output}
+                    onChange={(e) => handleSampleChange(idx, 'output', e.target.value)}
+                    rows={5}
+                    fullWidth
+                    placeholder={text("Kết quả mong đợi...", "Expected output...")}
+                  />
+                </div>
+                <Textarea
+                  label={text("Giải thích (tùy chọn)", "Explanation (optional)")}
+                  value={sample.explanation}
+                  onChange={(e) => handleSampleChange(idx, 'explanation', e.target.value)}
+                  rows={2}
+                  fullWidth
+                  placeholder={text("Giải thích cách giải...", "Explain the sample...")}
+                />
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderLimitsSection = () => (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-4)' }}>
+      <Card>
+        <CardHeader title={text("Giới hạn thực thi", "Execution limits")} subtitle={text("Cấu hình cho judge system", "Judge settings")} icon={rotateCcwIcon} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-3)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-3)' }}>
+            <Input
+              label={text("Giới hạn thời gian (ms)", "Time Limit (ms)")}
+              type="number"
+              value={localStatement.timeLimitMs}
+              onChange={(e) => updateField('timeLimitMs', parseInt(e.target.value) || 1000)}
+              fullWidth
+            />
+            <Input
+              label={text("Giới hạn bộ nhớ (MB)", "Memory Limit (MB)")}
+              type="number"
+              value={localStatement.memoryLimitMb}
+              onChange={(e) => updateField('memoryLimitMb', parseInt(e.target.value) || 256)}
+              fullWidth
+            />
+          </div>
+          <div style={{ padding: 'var(--spacing-3)', backgroundColor: 'var(--surface-sunken)', borderRadius: 'var(--radius-default)', fontSize: 'var(--text-xs)', color: 'var(--surface-text-secondary)' }}>
+            <strong>{text('Gợi ý:', 'Tips:')}</strong>
+            <ul style={{ margin: 'var(--spacing-2) 0 0 0', paddingLeft: 'var(--spacing-4)' }}>
+              <li>{text('Thời gian: 1000 ms cho bài cơ bản, 2000–5000 ms cho bài khó', 'Time: 1000 ms for basic problems, 2000–5000 ms for harder problems')}</li>
+              <li>{text('Bộ nhớ: 256 MB tiêu chuẩn, 512 MB–1 GB cho bài cần nhiều bộ nhớ', 'Memory: 256 MB is typical; use 512 MB–1 GB for memory-intensive problems')}</li>
+            </ul>
           </div>
         </div>
-      ) : (
-        /* Preview View */
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 max-w-4xl mx-auto shadow-lg space-y-6">
-          <div className="border-b border-slate-800 pb-4">
-            <h1 className="text-xl font-bold text-slate-100 flex items-center gap-3">
-              <span>{statement.name || 'Tên bài toán'}</span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-600/20 text-blue-400 border border-blue-500/30 font-mono">
-                {statement.code || 'CODE'}
-              </span>
-            </h1>
-            <div className="flex items-center gap-4 text-xs text-slate-400 mt-2 font-mono">
-              <span>Thời gian: {statement.timeLimitMs} ms</span>
-              <span>•</span>
-              <span>Bộ nhớ: {statement.memoryLimitMb} MB</span>
-            </div>
-          </div>
+      </Card>
 
-          <div>
-            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-2">Đề bài</h3>
-            <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
-              {statement.description || 'Chưa có mô tả.'}
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-2">Dữ liệu vào</h3>
-            <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
-              {statement.inputFormat || 'Chưa có định dạng input.'}
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-2">Dữ liệu ra</h3>
-            <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
-              {statement.outputFormat || 'Chưa có định dạng output.'}
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-2">Ràng buộc</h3>
-            <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap font-mono text-xs bg-slate-950 p-3 rounded-lg border border-slate-800">
-              {statement.constraints || 'Chưa có ràng buộc.'}
-            </p>
-          </div>
-
-          {statement.samples.length > 0 && (
-            <div>
-              <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-3">Ví dụ</h3>
-              <div className="space-y-4">
-                {statement.samples.map((s, idx) => (
-                  <div key={idx} className="border border-slate-800 rounded-lg overflow-hidden">
-                    <div className="bg-slate-950 px-3 py-1.5 text-xs font-semibold text-slate-400 border-b border-slate-800">
-                      Ví dụ {idx + 1}
-                    </div>
-                    <div className="grid grid-cols-2 divide-x divide-slate-800 bg-slate-950/70 p-3 font-mono text-xs">
-                      <div>
-                        <span className="text-[10px] text-slate-500 uppercase font-bold block mb-1">Standard Input:</span>
-                        <pre className="text-emerald-400 whitespace-pre-wrap">{s.input}</pre>
-                      </div>
-                      <div className="pl-3">
-                        <span className="text-[10px] text-slate-500 uppercase font-bold block mb-1">Standard Output:</span>
-                        <pre className="text-blue-400 whitespace-pre-wrap">{s.output}</pre>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+      <Card>
+        <CardHeader title={text("Độ phức tạp mong đợi", "Expected complexity")} subtitle={text("Hướng dẫn cho người giải", "Guidance for solvers")} icon={<CheckCircle2 className="w-4 h-4" />} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-3)' }}>
+          <Select
+            label={text("Độ phức tạp thời gian", "Time complexity")}
+            value=""
+            options={[
+              { value: 'O(N)', label: text('O(N) - Tuyến tính', 'O(N) - Linear') },
+              { value: 'O(N log N)', label: text('O(N log N) - Tuyến tính-logarit', 'O(N log N) - Linearithmic') },
+              { value: 'O(N^2)', label: text('O(N²) - Bậc hai', 'O(N²) - Quadratic') },
+              { value: 'O(N^3)', label: text('O(N³) - Bậc ba', 'O(N³) - Cubic') },
+              { value: 'O(2^N)', label: text('O(2^N) - Mũ', 'O(2^N) - Exponential') },
+            ]}
+            fullWidth
+          />
+          <Select
+            label={text("Độ phức tạp không gian", "Space complexity")}
+            value=""
+            options={[
+              { value: 'O(1)', label: text('O(1) - Hằng số', 'O(1) - Constant') },
+              { value: 'O(N)', label: text('O(N) - Tuyến tính', 'O(N) - Linear') },
+              { value: 'O(N^2)', label: text('O(N²) - Bậc hai', 'O(N²) - Quadratic') },
+            ]}
+            fullWidth
+          />
         </div>
-      )}
+      </Card>
+    </div>
+  );
+
+  const renderMetadataSection = () => (
+    <Card>
+      <CardHeader title={text("Thông tin bổ sung", "Additional information")} subtitle={text("Metadata cho đóng gói và xuất bản", "Metadata for packaging and publishing")} icon={<FileText className="w-4 h-4" />} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-3)' }}>
+        <Input
+          label={text("Tác giả", "Author")}
+          value=""
+          onChange={() => {}}
+          fullWidth
+          placeholder={text("Tên tác giả bài toán", "Problem author")}
+        />
+        <Input
+          label={text("Nguồn gốc", "Source")}
+          value=""
+          onChange={() => {}}
+          fullWidth
+          placeholder={text("Ví dụ: VNOI, Codeforces, tự soạn...", "e.g. VNOI, Codeforces, original...")}
+        />
+        <Select
+          label={text("Độ khó", "Difficulty")}
+          value=""
+          options={[
+            { value: 'easy', label: text('Dễ', 'Easy') },
+            { value: 'medium', label: text('Trung bình', 'Medium') },
+            { value: 'hard', label: text('Khó', 'Hard') },
+            { value: 'expert', label: text('Chuyên gia', 'Expert') },
+          ]}
+          fullWidth
+        />
+        <Textarea
+          label={text("Ghi chú nội bộ", "Internal notes")}
+          value=""
+          onChange={() => {}}
+          rows={3}
+          fullWidth
+          placeholder={text("Ghi chú cho team authoring...", "Notes for the authoring team...")}
+        />
+      </div>
+    </Card>
+  );
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)', padding: 'var(--spacing-4)', maxWidth: '1200px', margin: '0 auto', flex: 1 }}>
+      <Card>
+        <CardHeader
+          title={text("Soạn nội dung đề bài", "Statement editor")}
+          subtitle={`${localStatement.name} (${localStatement.code})`}
+          action={
+            <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
+              <Button variant="ghost" size="sm" leftIcon={downloadIcon} onClick={exportMarkdown}>
+                {text("Xuất Markdown", "Export Markdown")}
+              </Button>
+              <Button variant="primary" size="sm" leftIcon={saveIcon} onClick={() => onChangeStatement(localStatement)}>
+                {text("Lưu thay đổi", "Save changes")}
+              </Button>
+            </div>
+          }
+        />
+
+        {/* Section Tabs */}
+        <div style={{ display: 'flex', gap: 'var(--spacing-1)', borderBottom: '1px solid var(--surface-border)', marginBottom: 'var(--spacing-4)', overflowX: 'auto', overflowY: 'hidden' }}>
+          {sections.map((section) => {
+            const Icon = section.icon;
+            return (
+              <button
+                key={section.id}
+                onClick={() => setActiveSection(section.id as any)}
+                style={{
+                  display: 'flex',
+                  flexShrink: 0,
+                  alignItems: 'center',
+                  gap: 'var(--spacing-1-5)',
+                  padding: 'var(--spacing-2) var(--spacing-3)',
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: activeSection === section.id ? 'var(--font-semibold)' : 'var(--font-medium)',
+                  color: activeSection === section.id ? 'var(--tab-selected-text)' : 'var(--surface-text-secondary)',
+                  backgroundColor: activeSection === section.id ? 'var(--tab-selected-bg)' : 'transparent',
+                  border: 'none',
+                  borderBottom: activeSection === section.id ? '2px solid var(--tab-selected-border)' : '2px solid transparent',
+                  cursor: 'pointer',
+                  transition: 'all var(--transition-fast)',
+                  whiteSpace: 'nowrap',
+                  }}
+              >
+                <Icon className="w-4 h-4" />
+                {section.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Main Content */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)' }}>
+          {activeSection === 'main' && renderMainSection()}
+          {activeSection === 'samples' && renderSamplesSection()}
+          {activeSection === 'limits' && renderLimitsSection()}
+          {activeSection === 'metadata' && renderMetadataSection()}
+        </div>
+      </Card>
     </div>
   );
 };

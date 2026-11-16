@@ -10,7 +10,8 @@ export class TestPlanManager {
     ['minT', 'maxT'],
   ];
 
-  public static generateAdversarialPresets(problem: Problem, sourceConfig: Config, existingNames: string[]): TestGroupSpec[] {
+  public static generateAdversarialPresets(problem: Problem, sourceConfig: Config, existingNames: string[], language: 'vi' | 'en' = 'vi'): TestGroupSpec[] {
+    const text = (vi: string, en: string) => language === 'en' ? en : vi;
     const used = new Set(existingNames.map(n => n.toLowerCase()));
     const result: TestGroupSpec[] = [];
 
@@ -42,7 +43,7 @@ export class TestPlanManager {
         changedLow = true;
       }
     }
-    if (changedLow) addGroup('Biên nhỏ', low);
+    if (changedLow) addGroup(text('Biên nhỏ', 'Lower boundary'), low);
 
     // High boundary
     const high = sourceConfig.clone();
@@ -55,7 +56,7 @@ export class TestPlanManager {
         changedHigh = true;
       }
     }
-    if (changedHigh) addGroup('Biên lớn', high);
+    if (changedHigh) addGroup(text('Biên lớn', 'Upper boundary'), high);
 
     // Array duplicates
     if (problem.id === 'array' && sourceConfig.getNum('mode') === 0) {
@@ -63,7 +64,7 @@ export class TestPlanManager {
       repeated.set('distinct', 0);
       repeated.set('minVal', 0);
       repeated.set('maxVal', 0);
-      addGroup('Nhiều phần tử trùng', repeated);
+      addGroup(text('Nhiều phần tử trùng', 'Repeated elements'), repeated);
     }
 
     // Graph strongly connected
@@ -71,23 +72,24 @@ export class TestPlanManager {
       const strong = sourceConfig.clone();
       strong.set('stronglyConnected', 1);
       strong.set('dag', 0);
-      addGroup('Đồ thị liên thông mạnh', strong);
+      addGroup(text('Đồ thị liên thông mạnh', 'Strongly connected graph'), strong);
     }
 
     return result;
   }
 
-  public static validatePlan(groups: TestGroupSpec[]): string | null {
+  public static validatePlan(groups: TestGroupSpec[], language: 'vi' | 'en' = 'vi'): string | null {
+    const text = (vi: string, en: string) => language === 'en' ? en : vi;
     if (groups.length === 0) return null;
     let totalScore = 0;
     const names = new Set<string>();
 
     for (let i = 0; i < groups.length; i++) {
       const g = groups[i];
-      if (!g.name.trim()) return `Nhóm ${i + 1} chưa có tên.`;
-      if (names.has(g.name.toLowerCase())) return `Trùng tên nhóm: "${g.name}".`;
+      if (!g.name.trim()) return text(`Nhóm ${i + 1} chưa có tên.`, `Group ${i + 1} has no name.`);
+      if (names.has(g.name.toLowerCase())) return text(`Trùng tên nhóm: "${g.name}".`, `Duplicate group name: "${g.name}".`);
       names.add(g.name.toLowerCase());
-      if (g.testCount <= 0) return `Nhóm "${g.name}" có số test ≤ 0.`;
+      if (g.testCount <= 0) return text(`Nhóm "${g.name}" có số test ≤ 0.`, `Group "${g.name}" must have at least one test.`);
       if (typeof g.score === 'number') totalScore += g.score;
     }
 
@@ -96,10 +98,10 @@ export class TestPlanManager {
       if (g.prerequisites) {
         for (const prereq of g.prerequisites) {
           if (!names.has(prereq.toLowerCase())) {
-            return `Nhóm "${g.name}" phụ thuộc vào nhóm không tồn tại: "${prereq}".`;
+            return text(`Nhóm "${g.name}" phụ thuộc vào nhóm không tồn tại: "${prereq}".`, `Group "${g.name}" depends on a nonexistent group: "${prereq}".`);
           }
           if (prereq.toLowerCase() === g.name.toLowerCase()) {
-            return `Nhóm "${g.name}" không thể phụ thuộc vào chính nó.`;
+            return text(`Nhóm "${g.name}" không thể phụ thuộc vào chính nó.`, `Group "${g.name}" cannot depend on itself.`);
           }
         }
       }

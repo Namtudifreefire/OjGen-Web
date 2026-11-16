@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../i18n';
 import { Problem, Config, ProblemStatement, GeneratedTestCase } from '../../core/types';
 import { ProblemPackageExporter } from '../../core/packageExporter';
 import { X, Package, Download } from 'lucide-react';
@@ -24,6 +25,8 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   tests,
   onAddLog,
 }) => {
+  const { language } = useTranslation();
+  const text = (vi: string, en: string) => language === 'en' ? en : vi;
   const [format, setFormat] = useState<'OjGen' | 'Kattis'>('OjGen');
   const [packageName, setPackageName] = useState<string>(statement.code || problem.id);
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -45,11 +48,11 @@ export const PackageModal: React.FC<PackageModalProps> = ({
 
       const fileName = `${packageName || 'problem'}_${format.toLowerCase()}_package.zip`;
       ProblemPackageExporter.downloadBlob(blob, fileName);
-      onAddLog(`Đã đóng gói thành công ${tests.length} test theo chuẩn ${format} vào ${fileName}!`, 'success');
+      onAddLog(text(`Đã đóng gói thành công ${tests.length} test theo chuẩn ${format} vào ${fileName}!`, `Packaged ${tests.length} tests in ${format} format as ${fileName}.`), 'success');
       setIsExporting(false);
       onClose();
     } catch (err: any) {
-      alert(`Lỗi đóng gói: ${err.message}`);
+      alert(text(`Lỗi đóng gói: ${err.message}`, `Packaging failed: ${err.message}`));
       setIsExporting(false);
     }
   };
@@ -60,7 +63,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
             <Package className="w-4 h-4 text-blue-400" />
-            <span>Đóng gói bài tập (Export Package)</span>
+            <span>{text("Đóng gói bài tập (Export Package)", "Export problem package")}</span>
           </h3>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X className="w-4 h-4" />
@@ -69,7 +72,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
 
         <div className="p-4 space-y-3.5 text-xs">
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Tên gói (Package Name)</label>
+            <label className="block font-medium text-slate-300 mb-1">{text("Tên gói (Package Name)", "Package name")}</label>
             <input
               type="text"
               value={packageName}
@@ -79,7 +82,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
           </div>
 
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Định dạng gói xuất ra</label>
+            <label className="block font-medium text-slate-300 mb-1">{text("Định dạng gói xuất ra", "Export format")}</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -111,23 +114,22 @@ export const PackageModal: React.FC<PackageModalProps> = ({
 
           <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-400 space-y-1">
             <div className="flex justify-between">
-              <span>Số lượng test xuất:</span>
+              <span>{text("Số lượng test xuất:", "Tests to export:")}</span>
               <span className="font-mono text-slate-200">{tests.length} tests</span>
             </div>
             <div className="flex justify-between">
-              <span>Đề bài đính kèm:</span>
-              <span className="text-emerald-400 font-medium">Có (Markdown)</span>
+              <span>{text("Đề bài đính kèm:", "Statement included:")}</span>
+              <span className="text-emerald-400 font-medium">{text("Có (Markdown)", "Yes (Markdown)")}</span>
             </div>
             <div className="flex justify-between">
-              <span>Bảo toàn checksum:</span>
-              <span className="text-emerald-400 font-medium">SHA-256 (Mỗi test)</span>
+              <span>{text("Bảo toàn checksum:", "Checksums:")}</span>
+              <span className="text-emerald-400 font-medium">{text("SHA-256 (Mỗi test)", "SHA-256 (per test)")}</span>
             </div>
           </div>
         </div>
 
         <div className="p-3 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
-          <button onClick={onClose} className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs">
-            Hủy
+          <button onClick={onClose} className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs">{text("Hủy", "Cancel")}
           </button>
           <button
             onClick={handleExport}
@@ -135,7 +137,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>{isExporting ? 'Đang đóng gói...' : 'Tải gói ZIP'}</span>
+            <span>{isExporting ? text("Đang đóng gói...", "Packaging...") : text("Tải gói ZIP", "Download ZIP")}</span>
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Problem, ProblemStatement } from '../../core/types';
 import { X, Wrench, Check } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 interface ProblemSetupModalProps {
   isOpen: boolean;
@@ -17,10 +18,20 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
   statement,
   onChangeStatement,
 }) => {
+  const { language } = useTranslation();
+  const text = (vi: string, en: string) => language === 'en' ? en : vi;
   const [name, setName] = useState(statement.name || problem.title);
   const [code, setCode] = useState(statement.code || problem.id.toUpperCase());
   const [timeLimit, setTimeLimit] = useState(statement.timeLimitMs || 1000);
   const [memoryLimit, setMemoryLimit] = useState(statement.memoryLimitMb || 256);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setName(statement.name || problem.title);
+    setCode(statement.code || problem.id.toUpperCase());
+    setTimeLimit(statement.timeLimitMs || 1000);
+    setMemoryLimit(statement.memoryLimitMb || 256);
+  }, [isOpen, statement, problem]);
 
   if (!isOpen) return null;
 
@@ -41,7 +52,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
             <Wrench className="w-4 h-4 text-blue-400" />
-            <span>Thiết lập hồ sơ bài toán</span>
+            <span>{text('Thiết lập hồ sơ bài toán', 'Problem setup')}</span>
           </h3>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X className="w-4 h-4" />
@@ -50,7 +61,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
 
         <div className="p-4 space-y-3 text-xs">
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Tên bài toán</label>
+            <label className="block font-medium text-slate-300 mb-1">{text('Tên bài toán', 'Problem name')}</label>
             <input
               type="text"
               value={name}
@@ -60,7 +71,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
           </div>
 
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Mã bài (Code ID)</label>
+            <label className="block font-medium text-slate-300 mb-1">{text('Mã bài (Code ID)', 'Problem code')}</label>
             <input
               type="text"
               value={code}
@@ -71,7 +82,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-slate-300 mb-1">Thời gian (ms)</label>
+              <label className="block font-medium text-slate-300 mb-1">{text('Thời gian (ms)', 'Time limit (ms)')}</label>
               <input
                 type="number"
                 value={timeLimit}
@@ -80,7 +91,7 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
               />
             </div>
             <div>
-              <label className="block font-medium text-slate-300 mb-1">Bộ nhớ (MB)</label>
+              <label className="block font-medium text-slate-300 mb-1">{text('Bộ nhớ (MB)', 'Memory limit (MB)')}</label>
               <input
                 type="number"
                 value={memoryLimit}
@@ -96,13 +107,13 @@ export const ProblemSetupModal: React.FC<ProblemSetupModalProps> = ({
             onClick={onClose}
             className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
           >
-            Hủy
+            {text('Hủy', 'Cancel')}
           </button>
           <button
             onClick={handleSave}
             className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium"
           >
-            Lưu thiết lập
+            {text('Lưu thiết lập', 'Save settings')}
           </button>
         </div>
       </div>

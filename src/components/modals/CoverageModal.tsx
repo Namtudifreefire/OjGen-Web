@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../i18n';
 import { CoverageReport } from '../../core/coverage';
 import { X, Compass, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -9,6 +10,8 @@ interface CoverageModalProps {
 }
 
 export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, report }) => {
+  const { language } = useTranslation();
+  const text = (vi: string, en: string) => language === 'en' ? en : vi;
   if (!isOpen || !report) return null;
 
   return (
@@ -17,7 +20,7 @@ export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, r
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
             <Compass className="w-4 h-4 text-blue-400" />
-            <span>🧭 Báo cáo độ phủ &amp; Gợi ý trường hợp biên</span>
+            <span>{text("🧭 Báo cáo độ phủ & Gợi ý trường hợp biên", "🧭 Coverage report & edge-case suggestions")}</span>
           </h3>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X className="w-4 h-4" />
@@ -31,8 +34,7 @@ export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, r
 
           <div>
             <h4 className="font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              Đã quan sát được trong cấu hình:
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />{text("Đã quan sát được trong cấu hình:", "Observed in the configuration:")}
             </h4>
             <ul className="space-y-1.5 pl-2">
               {report.observations.map((obs, idx) => (
@@ -46,8 +48,7 @@ export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, r
 
           <div>
             <h4 className="font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
-              Gợi ý bổ sung test:
+              <AlertCircle className="w-3.5 h-3.5 text-amber-400" />{text("Gợi ý bổ sung test:", "Suggested additional tests:")}
             </h4>
             <ul className="space-y-1.5 pl-2">
               {report.suggestions.map((sug, idx) => (
@@ -59,14 +60,12 @@ export const CoverageModal: React.FC<CoverageModalProps> = ({ isOpen, onClose, r
             </ul>
           </div>
 
-          <p className="text-[11px] text-slate-500 italic pt-2 border-t border-slate-800">
-            * Các phép đo dùng định dạng input mà OjGen nhận diện; phân loại trường hợp mang tính heuristic, không thay thế việc rà soát logic đề.
+          <p className="text-[11px] text-slate-500 italic pt-2 border-t border-slate-800">{text("* Các phép đo dùng định dạng input mà OjGen nhận diện; phân loại trường hợp mang tính heuristic, không thay thế việc rà soát logic đề.", "* Measurements use recognized input formats. Classification is heuristic and does not replace reviewing the problem logic.")}
           </p>
         </div>
 
         <div className="p-3 border-t border-slate-800 flex justify-end bg-slate-950/60">
-          <button onClick={onClose} className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs">
-            Đóng
+          <button onClick={onClose} className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs">{text("Đóng", "Close")}
           </button>
         </div>
       </div>

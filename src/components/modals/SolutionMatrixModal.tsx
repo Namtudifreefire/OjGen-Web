@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../i18n';
 import { GeneratedTestCase, Problem, Config } from '../../core/types';
 import { X, Play, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
@@ -23,6 +24,8 @@ export const SolutionMatrixModal: React.FC<SolutionMatrixModalProps> = ({
   problem,
   config,
 }) => {
+  const { language } = useTranslation();
+  const text = (vi: string, en: string) => language === 'en' ? en : vi;
   const [matrixData, setMatrixData] = useState<Record<number, SolutionRun[]> | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
@@ -73,10 +76,9 @@ export const SolutionMatrixModal: React.FC<SolutionMatrixModalProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <div>
             <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-              <span>🧪 So sánh ma trận nhiều lời giải (Solution Matrix)</span>
+              <span>{text("🧪 So sánh ma trận nhiều lời giải (Solution Matrix)", "🧪 Solution matrix")}</span>
             </h3>
-            <p className="text-xs text-slate-400">
-              Kiểm tra tỷ lệ AC / WA / TLE của các thuật toán trên {tests.length} test
+            <p className="text-xs text-slate-400">{text("Kiểm tra tỷ lệ AC / WA / TLE của các thuật toán trên", "Compare AC / WA / TLE results across")} {tests.length} test
             </p>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
@@ -91,27 +93,26 @@ export const SolutionMatrixModal: React.FC<SolutionMatrixModalProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white transition"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
-            <span>{isRunning ? 'Đang chạy ma trận...' : 'Chạy so sánh ma trận'}</span>
+            <span>{isRunning ? text("Đang chạy ma trận...", "Running matrix...") : text("Chạy so sánh ma trận", "Run matrix")}</span>
           </button>
           <span className="text-xs text-slate-400">
-            {tests.length === 0 ? 'Chưa có test nào được tạo.' : `${tests.length} test sẵn sàng`}
+            {tests.length === 0 ? text("Chưa có test nào được tạo.", "No tests have been generated.") : text(`${tests.length} test sẵn sàng`, `${tests.length} tests ready`)}
           </span>
         </div>
 
         <div className="flex-1 overflow-auto p-4">
           {!matrixData ? (
-            <div className="h-full flex items-center justify-center text-slate-500 text-xs italic p-12">
-              Nhấn "Chạy so sánh ma trận" để kiểm tra tính phân loại của bộ test đối với các lời giải đúng/sai/quá thời gian.
+            <div className="h-full flex items-center justify-center text-slate-500 text-xs italic p-12">{text("Nhấn \"Chạy so sánh ma trận\" để kiểm tra tính phân loại của bộ test đối với các lời giải đúng/sai/quá thời gian.", "Select “Run matrix” to compare solutions on the test set.")}
             </div>
           ) : (
             <table className="w-full text-xs text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-800 text-slate-400 font-mono">
                   <th className="p-2">Test</th>
-                  <th className="p-2">Nhóm / Nhãn</th>
-                  <th className="p-2">Lời giải chuẩn</th>
-                  <th className="p-2">Tham lam</th>
-                  <th className="p-2">Vét cạn (Brute-force)</th>
+                  <th className="p-2">{text("Nhóm / Nhãn", "Group / tag")}</th>
+                  <th className="p-2">{text("Lời giải chuẩn", "Reference solution")}</th>
+                  <th className="p-2">{text('Tham lam', 'Greedy')}</th>
+                  <th className="p-2">{text('Vét cạn (Brute-force)', 'Brute force')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -153,8 +154,7 @@ export const SolutionMatrixModal: React.FC<SolutionMatrixModalProps> = ({
         </div>
 
         <div className="p-3 border-t border-slate-800 flex items-center justify-end bg-slate-950/60">
-          <button onClick={onClose} className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">
-            Đóng
+          <button onClick={onClose} className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">{text("Đóng", "Close")}
           </button>
         </div>
       </div>

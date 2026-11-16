@@ -1,5 +1,9 @@
 import React from 'react';
-import { Trash2, Copy, Download } from 'lucide-react';
+import { useTranslation } from '../i18n';
+import { Trash2, Copy, Download, Terminal } from 'lucide-react';
+import { Card, CardHeader, CardDivider, CardFooter } from './ui/Card';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
 
 export interface LogEntry {
   id: string;
@@ -13,11 +17,19 @@ interface LogTabProps {
   onClearLogs: () => void;
 }
 
+const levelConfig = {
+  info: { variant: 'info' as const, color: 'var(--surface-text-primary)' },
+  warn: { variant: 'warning' as const, color: 'var(--color-warning)' },
+  error: { variant: 'error' as const, color: 'var(--color-error)' },
+  success: { variant: 'success' as const, color: 'var(--color-success)' },
+};
+
 export const LogTab: React.FC<LogTabProps> = ({ logs, onClearLogs }) => {
+  const { t, language } = useTranslation();
   const handleCopy = () => {
     const text = logs.map(l => `[${l.timestamp}] [${l.level.toUpperCase()}] ${l.message}`).join('\n');
     navigator.clipboard.writeText(text);
-    alert('Đã sao chép toàn bộ nhật ký!');
+    alert(language === 'en' ? 'Log copied.' : 'Đã sao chép toàn bộ nhật ký!');
   };
 
   const handleDownload = () => {
@@ -32,73 +44,81 @@ export const LogTab: React.FC<LogTabProps> = ({ logs, onClearLogs }) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 flex flex-col h-[calc(100vh-140px)]">
-      {/* Action Bar */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-slate-100">📋 Nhật ký hoạt động</span>
-          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-            Ctrl+L
-          </kbd>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">
-            {logs.length} dòng
-          </span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)', padding: 'var(--spacing-4)', maxWidth: '1200px', margin: '0 auto', flex: 1, minHeight: 'calc(100vh - 200px)' }}>
+      <Card>
+        <CardHeader
+          title={t('log.title')}
+          subtitle={`${logs.length} ${language === 'en' ? 'lines' : 'dòng'}`}
+          icon={<Terminal className="w-4 h-4" style={{ color: 'var(--color-primary-500)' }} />}
+          action={
+            <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
+              <Button variant="ghost" size="sm" leftIcon={<Trash2 className="w-3.5 h-3.5" />} onClick={onClearLogs}>
+                {t('log.clear')}
+              </Button>
+              <Button variant="ghost" size="sm" leftIcon={<Copy className="w-3.5 h-3.5" />} onClick={handleCopy}>
+                {t('buttons.copy')}
+              </Button>
+              <Button variant="secondary" size="sm" leftIcon={<Download className="w-3.5 h-3.5" />} onClick={handleDownload}>
+                {language === 'en' ? 'Download' : 'Lưu ra file'}
+              </Button>
+            </div>
+          }
+        />
+
+        <CardDivider />
+
+        <div
+          style={{
+            flex: 1,
+            backgroundColor: 'var(--surface-sunken)',
+            border: '1px solid var(--surface-border)',
+            borderRadius: 'var(--radius-default)',
+            padding: 'var(--spacing-4)',
+            overflow: 'auto',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--text-xs)',
+            lineHeight: '1.6',
+            minHeight: '300px',
+            maxHeight: '60vh',
+          }}
+        >
+          {logs.length === 0 ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: 'var(--surface-text-muted)', fontStyle: 'italic' }}>
+              {t('log.empty')}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-1)' }}>
+              {logs.map((log) => {
+                const config = levelConfig[log.level];
+                return (
+                  <div
+                    key={log.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 'var(--spacing-3)',
+                      padding: 'var(--spacing-1) var(--spacing-2)',
+                      borderRadius: 'var(--radius-sm)',
+                      transition: 'background-color var(--transition-fast)',
+                      color: config.color,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface-hover)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  >
+                    <span style={{ color: 'var(--surface-text-muted)', whiteSpace: 'nowrap', flexShrink: 0, fontSize: '10px' }}>
+                      {log.timestamp}
+                    </span>
+                    <Badge variant={config.variant} size="sm">
+                      {log.level.toUpperCase()}
+                    </Badge>
+                    <span style={{ flex: 1, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{log.id === 'init' ? (language === 'en' ? 'OjGen 3.3.0 Web Edition is ready with 19 templates. Use [Ctrl+S], [Ctrl+G], [Ctrl+L] or [?] for shortcuts.' : 'OjGen 3.3.0 Web Edition đã khởi động sẵn sàng. 19 khuôn bài toán đã sẵn sàng. Sử dụng phím tắt [Ctrl+S], [Ctrl+G], [Ctrl+L] hoặc [?] để thao tác nhanh.') : log.message}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onClearLogs}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Xóa nhật ký</span>
-          </button>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            <span>Sao chép</span>
-          </button>
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Lưu ra file…</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Terminal Container */}
-      <div className="flex-1 bg-slate-950 border border-slate-800 rounded-xl p-4 overflow-auto font-mono text-xs leading-relaxed">
-        {logs.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-slate-600 italic">
-            Chưa có nhật ký nào được ghi nhận.
-          </div>
-        ) : (
-          logs.map((log) => {
-            let color = 'text-slate-300';
-            if (log.level === 'warn') color = 'text-amber-400';
-            if (log.level === 'error') color = 'text-red-400 font-semibold';
-            if (log.level === 'success') color = 'text-emerald-400 font-semibold';
-
-            return (
-              <div key={log.id} className="py-0.5 flex items-start gap-3 hover:bg-slate-900/50 px-1 rounded">
-                <span className="text-slate-500 select-none text-[11px]">{log.timestamp}</span>
-                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.2 rounded ${
-                  log.level === 'error' ? 'bg-red-500/20 text-red-400' :
-                  log.level === 'warn' ? 'bg-amber-500/20 text-amber-400' :
-                  log.level === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'
-                }`}>
-                  {log.level}
-                </span>
-                <span className={color}>{log.message}</span>
-              </div>
-            );
-          })
-        )}
-      </div>
+      </Card>
     </div>
   );
 };

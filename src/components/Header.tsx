@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   FileText,
   FolderOpen,
@@ -13,9 +13,194 @@ import {
   CheckCircle2,
   Layers,
   Sparkles,
-  Download,
+  Upload,
+  GitCompare,
+  FileCode,
+  Terminal,
   Keyboard,
 } from 'lucide-react';
+import { useTranslation } from '../i18n';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
+import { LanguageSwitcher } from './ui/LanguageSwitcher';
+
+interface MenuItem {
+  label?: string;
+  icon?: React.ReactNode;
+  shortcut?: string;
+  action?: () => void;
+  divider?: boolean;
+  danger?: boolean;
+}
+
+const useClickOutside = (ref: React.RefObject<HTMLElement>, handler: () => void) => {
+  useEffect(() => {
+    const listener = (event: MouseEvent) => {
+      if (!ref.current || ref.current.contains(event.target as Node)) return;
+      handler();
+    };
+    document.addEventListener('mousedown', listener);
+    return () => document.removeEventListener('mousedown', listener);
+  }, [ref, handler]);
+};
+
+const MenuButton: React.FC<{
+  label: string;
+  icon?: React.ReactNode;
+  isActive?: boolean;
+  onClick: () => void;
+}> = ({ label, icon, isActive, onClick }) => (
+  <button
+    onClick={onClick}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 'var(--spacing-2)',
+      padding: 'var(--spacing-2) var(--spacing-3)',
+      fontSize: 'var(--text-sm)',
+      fontWeight: isActive ? 'var(--font-semibold)' : 'var(--font-medium)',
+      color: isActive ? 'var(--surface-text-primary)' : 'var(--surface-text-secondary)',
+      backgroundColor: isActive ? 'var(--surface-hover)' : 'transparent',
+      border: 'none',
+      borderRadius: 'var(--radius-default)',
+      cursor: 'pointer',
+      transition: 'all var(--transition-fast)',
+      width: '100%',
+      textAlign: 'left',
+    }}
+    onMouseEnter={(e) => {
+      if (!isActive) e.currentTarget.style.backgroundColor = 'var(--surface-hover)';
+    }}
+    onMouseLeave={(e) => {
+      if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+    }}
+  >
+    {icon && <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>}
+    <span>{label}</span>
+  </button>
+);
+
+const DropdownMenu: React.FC<{
+  trigger: React.ReactNode;
+  items: MenuItem[];
+  align?: 'left' | 'right';
+  width?: string;
+}> = ({ trigger, items, align = 'left', width = '240px' }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useClickOutside(menuRef, () => setIsOpen(false));
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+      triggerRef.current?.focus();
+    }
+  };
+
+  return (
+    <div className="relative" style={{ display: 'inline-flex' }}>
+      <button
+        ref={triggerRef}
+        onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={handleKeyDown}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 'var(--spacing-1)',
+          padding: 'var(--spacing-1-5) var(--spacing-2-5)',
+          fontSize: 'var(--text-sm)',
+          fontWeight: 'var(--font-medium)',
+          color: isOpen ? 'var(--surface-text-primary)' : 'var(--surface-text-secondary)',
+          backgroundColor: isOpen ? 'var(--surface-hover)' : 'transparent',
+          border: 'none',
+          borderRadius: 'var(--radius-default)',
+          cursor: 'pointer',
+          transition: 'all var(--transition-fast)',
+        }}
+        onMouseEnter={(e) => { if (!isOpen) e.currentTarget.style.backgroundColor = 'var(--surface-hover)'; }}
+        onMouseLeave={(e) => { if (!isOpen) e.currentTarget.style.backgroundColor = 'transparent'; }}
+      >
+        {trigger}
+      </button>
+
+      {isOpen && (
+        <div
+          ref={menuRef}
+          style={{
+            position: 'absolute',
+            top: '100%',
+            [align]: 0,
+            marginTop: 'var(--spacing-1)',
+            minWidth: width,
+            backgroundColor: 'var(--surface-raised)',
+            border: '1px solid var(--surface-border)',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-lg)',
+            padding: 'var(--spacing-1)',
+            zIndex: 'var(--z-dropdown)',
+            animation: 'fadeIn 150ms ease',
+          }}
+          role="menu"
+        >
+          {items.map((item, index) => (
+            <React.Fragment key={index}>
+              {item.divider && (
+                <div
+                  style={{
+                    height: '1px',
+                    backgroundColor: 'var(--surface-border)',
+                    margin: 'var(--spacing-1) 0',
+                  }}
+                />
+              )}
+              <button
+                onClick={() => { item.action(); setIsOpen(false); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  padding: 'var(--spacing-2) var(--spacing-3)',
+                  fontSize: 'var(--text-sm)',
+                  color: item.danger ? 'var(--color-error)' : 'var(--surface-text-primary)',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderRadius: 'var(--radius-default)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all var(--transition-fast)',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface-hover)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                role="menuitem"
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)' }}>
+                  {item.icon && <span style={{ display: 'flex', width: '18px' }}>{item.icon}</span>}
+                  {item.label}
+                </span>
+                {item.shortcut && (
+                  <kbd style={{
+                    fontSize: '10px',
+                    fontFamily: 'var(--font-mono)',
+                    color: 'var(--surface-text-muted)',
+                    backgroundColor: 'var(--surface-sunken)',
+                    padding: '1px 6px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--surface-border)',
+                  }}>
+                    {item.shortcut}
+                  </kbd>
+                )}
+              </button>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface HeaderProps {
   theme: 'dark' | 'light';
@@ -29,6 +214,11 @@ interface HeaderProps {
   onOpenQueue: () => void;
   onRunSelfTest: () => void;
   onOpenShortcuts: () => void;
+  onOpenAbout: () => void;
+  onOpenImport: () => void;
+  onOpenCompare: () => void;
+  onOpenContract: () => void;
+  onOpenRunProfile: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
@@ -45,216 +235,167 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenQueue,
   onRunSelfTest,
   onOpenShortcuts,
+  onOpenAbout,
+  onOpenImport,
+  onOpenCompare,
+  onOpenContract,
+  onOpenRunProfile,
   activeTab,
   setActiveTab,
 }) => {
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const { t } = useTranslation();
 
-  const closeMenu = () => setActiveMenu(null);
+  const fileMenuItems: MenuItem[] = [
+    { label: t('header.saveProject'), icon: <Save className="w-4 h-4" />, shortcut: 'Ctrl+S', action: onSaveProject },
+    { label: t('header.openProject'), icon: <FolderOpen className="w-4 h-4" />, shortcut: 'Ctrl+O', action: onOpenProject },
+    { divider: true },
+    { label: t('header.problemContent'), icon: <FileText className="w-4 h-4" />, action: () => setActiveTab('statement') },
+    { label: t('header.packageProblem'), icon: <Package className="w-4 h-4" />, shortcut: 'Ctrl+B', action: onOpenPackage },
+  ];
+
+  const toolsMenuItems: MenuItem[] = [
+    { label: t('header.testPlan'), icon: <Layers className="w-4 h-4" />, shortcut: 'Ctrl+P', action: onOpenPlan },
+    { label: t('header.differentialTesting'), icon: <RotateCcw className="w-4 h-4" />, shortcut: 'Ctrl+D', action: () => setActiveTab('differential') },
+    { label: t('header.solutionMatrix'), icon: <Sparkles className="w-4 h-4" />, shortcut: 'Ctrl+M', action: onOpenMatrix },
+    { label: t('header.queueManagement'), icon: <Play className="w-4 h-4" />, action: onOpenQueue },
+    { divider: true },
+    { label: t('header.validatorChecker'), icon: <Wrench className="w-4 h-4" />, action: () => setActiveTab('scaffolds') },
+    { label: t('header.validatorContract'), icon: <FileCode className="w-4 h-4" />, shortcut: 'Ctrl+Shift+T', action: onOpenContract },
+    { label: t('header.runProfile'), icon: <Terminal className="w-4 h-4" />, shortcut: 'Ctrl+Shift+R', action: onOpenRunProfile },
+    { divider: true },
+    { label: t('header.selftest'), icon: <CheckCircle2 className="w-4 h-4" />, action: onRunSelfTest, danger: false },
+  ];
+
+  const helpMenuItems: MenuItem[] = [
+    { label: t('header.shortcuts'), icon: <Keyboard className="w-4 h-4" />, shortcut: '?', action: onOpenShortcuts },
+    { label: t('header.guide'), icon: <HelpCircle className="w-4 h-4" />, action: () => setActiveTab('help') },
+    { divider: true },
+    { label: t('header.about'), action: onOpenAbout },
+  ];
 
   return (
-    <header className="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-40 select-none">
+    <header
+      style={{
+        borderBottom: '1px solid var(--surface-border)',
+        backgroundColor: 'var(--surface-base)',
+        backdropFilter: 'blur(8px)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 'var(--z-sticky)',
+        userSelect: 'none',
+      }}
+    >
       {/* Top Application Bar */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800/80">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 shadow-md shadow-blue-500/30 text-white font-bold text-sm tracking-wider">
+      <div
+        className="app-header-bar"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 'var(--spacing-3) var(--spacing-4)',
+          borderBottom: '1px solid var(--surface-border)',
+          backgroundColor: 'var(--surface-raised)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-3)', minWidth: 0 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '32px',
+              height: '32px',
+              flexShrink: 0,
+              borderRadius: 'var(--radius-lg)',
+              backgroundColor: 'var(--color-primary-600)',
+              boxShadow: '0 4px 14px 0 rgb(59 130 246 / 0.4)',
+              color: 'white',
+              fontWeight: 'var(--font-bold)',
+              fontSize: 'var(--text-sm)',
+              letterSpacing: '0.05em',
+            }}
+          >
             OJ
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-base text-slate-100 tracking-wide">OjGen</span>
-              <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                v3.3.0
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)' }}>
+              <span style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-base)', color: 'var(--surface-text-primary)', letterSpacing: '0.02em' }}>
+                OjGen
               </span>
+              <Badge variant="primary" size="sm">v3.3.0</Badge>
             </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              Trình tạo bộ test &amp; Authoring Suite cho bài lập trình thi đấu
+            <p style={{ margin: '0', fontSize: 'var(--text-xs)', color: 'var(--surface-text-muted)' }}>
+              {t('app.subtitle')}
             </p>
           </div>
         </div>
 
-        {/* Action quick buttons */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onOpenSetup}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-            title="Thiết lập thông tin bài toán"
-          >
-            <Wrench className="w-3.5 h-3.5 text-blue-400" />
-            <span>Thiết lập bài</span>
-          </button>
+        <div className="app-header-actions" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)' }}>
+          <Button variant="ghost" size="sm" leftIcon={<Wrench className="w-3.5 h-3.5" />} onClick={onOpenSetup}>
+            {t('header.setup')}
+          </Button>
 
-          <button
-            onClick={onOpenPackage}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition"
-            title="Đóng gói bài thi (ZIP / Kattis) [Ctrl+B]"
-          >
-            <Package className="w-3.5 h-3.5" />
-            <span>Đóng gói bài</span>
-          </button>
+          <Button variant="primary" size="sm" leftIcon={<Package className="w-3.5 h-3.5" />} onClick={onOpenPackage}>
+            {t('header.package')}
+          </Button>
 
-          <button
-            onClick={onOpenShortcuts}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-            title="Phím tắt bàn phím (Ctrl+/ hoặc ?)"
-          >
-            <Keyboard className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Phím tắt</span>
-          </button>
+          <Button variant="secondary" size="sm" leftIcon={<Upload className="w-3.5 h-3.5" />} onClick={onOpenImport}>
+            {t('header.import')}
+          </Button>
 
-          <button
+          <Button variant="secondary" size="sm" leftIcon={<GitCompare className="w-3.5 h-3.5" />} onClick={onOpenCompare}>
+            {t('header.compare')}
+          </Button>
+
+          <Button variant="ghost" size="sm" leftIcon={<Keyboard className="w-3.5 h-3.5" />} onClick={onOpenShortcuts}>
+            {t('header.keyboardShortcuts')}
+          </Button>
+
+          <LanguageSwitcher />
+
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onToggleTheme}
-            className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-md transition"
-            title="Đổi chủ đề Sáng / Tối"
+            aria-label={theme === 'dark' ? t('header.themeLight') : t('header.themeDark')}
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-blue-400" />}
-          </button>
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </Button>
         </div>
       </div>
 
-      {/* Menu Bar (Tệp, Công cụ, Giao diện, Trợ giúp) */}
-      <div className="flex items-center gap-1 px-3 py-1 text-xs text-slate-300 bg-slate-900/60 relative">
-        {/* Tệp Menu */}
-        <div className="relative">
-          <button
-            onClick={() => setActiveMenu(activeMenu === 'file' ? null : 'file')}
-            className={`px-2.5 py-1 rounded hover:bg-slate-800 transition ${activeMenu === 'file' ? 'bg-slate-800 text-white font-semibold' : ''}`}
-          >
-            Tệp
-          </button>
-          {activeMenu === 'file' && (
-            <div
-              className="absolute left-0 top-full mt-1 w-60 rounded-md bg-slate-900 border border-slate-700 shadow-xl py-1 z-50 text-slate-200"
-              onMouseLeave={closeMenu}
-            >
-              <button
-                onClick={() => { onSaveProject(); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2"><Save className="w-3.5 h-3.5" /> Lưu dự án (.ojproject)</span>
-                <span className="text-[10px] text-slate-400 font-mono">Ctrl+S</span>
-              </button>
-              <button
-                onClick={() => { onOpenProject(); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2"><FolderOpen className="w-3.5 h-3.5" /> Mở dự án…</span>
-                <span className="text-[10px] text-slate-400 font-mono">Ctrl+O</span>
-              </button>
-              <div className="h-px bg-slate-800 my-1" />
-              <button
-                onClick={() => { setActiveTab('statement'); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center gap-2"
-              >
-                <FileText className="w-3.5 h-3.5" /> Soạn nội dung đề…
-              </button>
-              <button
-                onClick={() => { onOpenPackage(); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2"><Package className="w-3.5 h-3.5" /> Đóng gói bài tập…</span>
-                <span className="text-[10px] text-slate-400 font-mono">Ctrl+B</span>
-              </button>
-            </div>
-          )}
-        </div>
+      {/* Menu Bar */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--spacing-1)',
+          padding: 'var(--spacing-1) var(--spacing-3)',
+          fontSize: 'var(--text-xs)',
+          color: 'var(--surface-text-secondary)',
+          backgroundColor: 'var(--surface-base)',
+        }}
+      >
+        <DropdownMenu
+          trigger={<span>{t('header.file')}</span>}
+          items={fileMenuItems}
+          align="left"
+          width="260px"
+        />
 
-        {/* Công cụ Menu */}
-        <div className="relative">
-          <button
-            onClick={() => setActiveMenu(activeMenu === 'tools' ? null : 'tools')}
-            className={`px-2.5 py-1 rounded hover:bg-slate-800 transition ${activeMenu === 'tools' ? 'bg-slate-800 text-white font-semibold' : ''}`}
-          >
-            Công cụ
-          </button>
-          {activeMenu === 'tools' && (
-            <div
-              className="absolute left-0 top-full mt-1 w-64 rounded-md bg-slate-900 border border-slate-700 shadow-xl py-1 z-50 text-slate-200"
-              onMouseLeave={closeMenu}
-            >
-              <button
-                onClick={() => { onOpenPlan(); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2"><Layers className="w-3.5 h-3.5" /> Kế hoạch nhóm test / Subtasks…</span>
-                <span className="text-[10px] text-slate-400 font-mono">Ctrl+P</span>
-              </button>
-              <button
-                onClick={() => { setActiveTab('differential'); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2"><RotateCcw className="w-3.5 h-3.5" /> Kiểm thử đối chiếu &amp; Thu nhỏ lỗi</span>
-                <span className="text-[10px] text-slate-400 font-mono">Ctrl+D</span>
-              </button>
-              <button
-                onClick={() => { onOpenMatrix(); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5" /> Ma trận nhiều lời giải (AC/WA/TLE)</span>
-                <span className="text-[10px] text-slate-400 font-mono">Ctrl+M</span>
-              </button>
-              <button
-                onClick={() => { onOpenQueue(); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center gap-2"
-              >
-                <Play className="w-3.5 h-3.5" /> Quản lý hàng đợi sinh test…
-              </button>
-              <div className="h-px bg-slate-800 my-1" />
-              <button
-                onClick={() => { setActiveTab('scaffolds'); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center gap-2"
-              >
-                <Wrench className="w-3.5 h-3.5" /> Tạo khung Validator / Checker…
-              </button>
-              <button
-                onClick={() => { onRunSelfTest(); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center gap-2 text-emerald-400"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" /> Chạy kiểm tra nội bộ (Selftest)
-              </button>
-            </div>
-          )}
-        </div>
+        <DropdownMenu
+          trigger={<span>{t('header.tools')}</span>}
+          items={toolsMenuItems}
+          align="left"
+          width="320px"
+        />
 
-        {/* Trợ giúp Menu */}
-        <div className="relative">
-          <button
-            onClick={() => setActiveMenu(activeMenu === 'help' ? null : 'help')}
-            className={`px-2.5 py-1 rounded hover:bg-slate-800 transition ${activeMenu === 'help' ? 'bg-slate-800 text-white font-semibold' : ''}`}
-          >
-            Trợ giúp
-          </button>
-          {activeMenu === 'help' && (
-            <div
-              className="absolute left-0 top-full mt-1 w-56 rounded-md bg-slate-900 border border-slate-700 shadow-xl py-1 z-50 text-slate-200"
-              onMouseLeave={closeMenu}
-            >
-              <button
-                onClick={() => { onOpenShortcuts(); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2"><Keyboard className="w-3.5 h-3.5 text-cyan-400" /> Bảng phím tắt bàn phím</span>
-                <span className="text-[10px] text-slate-400 font-mono">?</span>
-              </button>
-              <button
-                onClick={() => { setActiveTab('help'); closeMenu(); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white flex items-center gap-2"
-              >
-                <HelpCircle className="w-3.5 h-3.5" /> Hướng dẫn sử dụng
-              </button>
-              <div className="h-px bg-slate-800 my-1" />
-              <button
-                onClick={() => {
-                  alert("OjGen 3.3.0 Web Edition\\nBộ công cụ tạo test và authoring chuyên nghiệp cho Competitive Programming.\\nNgôn ngữ: TypeScript + React.");
-                  closeMenu();
-                }}
-                className="w-full text-left px-3 py-1.5 hover:bg-blue-600 hover:text-white"
-              >
-                Giới thiệu
-              </button>
-            </div>
-          )}
-        </div>
+        <DropdownMenu
+          trigger={<span>{t('header.help')}</span>}
+          items={helpMenuItems}
+          align="left"
+          width="220px"
+        />
       </div>
     </header>
   );

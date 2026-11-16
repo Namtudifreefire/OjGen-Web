@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../i18n';
 import { X, Keyboard, Command, Save, Play, FileText, Layers, Package, Sparkles, RotateCcw, ListFilter } from 'lucide-react';
 
 interface ShortcutsModalProps {
@@ -7,6 +8,8 @@ interface ShortcutsModalProps {
 }
 
 export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose }) => {
+  const { language } = useTranslation();
+  const text = (vi: string, en: string) => language === 'en' ? en : vi;
   if (!isOpen) return null;
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -14,75 +17,75 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
   const shortcutGroups = [
     {
-      title: 'Phím tắt tác vụ chính (Global)',
+      title: text("Phím tắt tác vụ chính (Global)", "Global shortcuts"),
       items: [
         {
           keys: [`${modKey}`, 'S'],
-          description: 'Lưu toàn bộ dự án hiện tại ra tệp .ojproject.json',
+          description: text("Lưu toàn bộ dự án hiện tại ra tệp .ojproject.json", "Save the current project to .ojproject.json"),
           icon: <Save className="w-4 h-4 text-emerald-400" />,
           highlight: true,
         },
         {
           keys: [`${modKey}`, 'G'],
-          description: 'Bắt đầu sinh bộ test (tự động chuyển tab và kích hoạt quá trình tạo)',
+          description: text("Bắt đầu sinh bộ test (tự động chuyển tab và kích hoạt quá trình tạo)", "Start generating tests"),
           icon: <Play className="w-4 h-4 text-blue-400 fill-blue-400/30" />,
           highlight: true,
         },
         {
           keys: [`${modKey}`, 'L'],
-          description: 'Chuyển nhanh sang tab Nhật ký (xem log thực thi & kết quả)',
+          description: text("Chuyển nhanh sang tab Nhật ký (xem log thực thi & kết quả)", "Open the log tab"),
           icon: <FileText className="w-4 h-4 text-amber-400" />,
           highlight: true,
         },
       ],
     },
     {
-      title: 'Tệp & Quản lý bài tập',
+      title: text("Tệp & Quản lý bài tập", "Files & problem management"),
       items: [
         {
           keys: [`${modKey}`, 'O'],
-          description: 'Mở tệp dự án OjGen (.ojproject.json)',
+          description: text("Mở tệp dự án OjGen (.ojproject.json)", "Open an OjGen project"),
           icon: <Layers className="w-4 h-4 text-purple-400" />,
         },
         {
           keys: [`${modKey}`, 'P'],
-          description: 'Mở kế hoạch phân nhóm test / Subtasks',
+          description: text("Mở kế hoạch phân nhóm test / Subtasks", "Open the test group plan"),
           icon: <Layers className="w-4 h-4 text-indigo-400" />,
         },
         {
           keys: [`${modKey}`, 'B'],
-          description: 'Mở hộp thoại đóng gói bài tập (ZIP / Kattis)',
+          description: text("Mở hộp thoại đóng gói bài tập (ZIP / Kattis)", "Open the packaging dialog"),
           icon: <Package className="w-4 h-4 text-amber-400" />,
         },
         {
           keys: [`${modKey}`, 'M'],
-          description: 'Mở ma trận kiểm thử nhiều lời giải (Solution Matrix)',
+          description: text("Mở ma trận kiểm thử nhiều lời giải (Solution Matrix)", "Open the solution matrix"),
           icon: <Sparkles className="w-4 h-4 text-pink-400" />,
         },
       ],
     },
     {
-      title: 'Điều hướng tab & Hộp thoại',
+      title: text("Điều hướng tab & Hộp thoại", "Navigation & dialogs"),
       items: [
         {
           keys: [`${modKey}`, 'I'],
-          description: 'Chuyển nhanh sang tab Kiểm kê bài test (Inventory)',
+          description: text("Chuyển nhanh sang tab Kiểm kê bài test (Inventory)", "Open the test inventory"),
           icon: <ListFilter className="w-4 h-4 text-sky-400" />,
         },
         {
           keys: [`${modKey}`, 'D'],
-          description: 'Chuyển nhanh sang tab Đối chiếu & Thu nhỏ test (Differential)',
+          description: text("Chuyển nhanh sang tab Đối chiếu & Thu nhỏ test (Differential)", "Open differential testing"),
           icon: <RotateCcw className="w-4 h-4 text-orange-400" />,
         },
         {
           keys: [`${modKey}`, '/'],
           altKeys: ['?'],
-          description: 'Mở / Đóng bảng danh sách phím tắt này',
+          description: text("Mở / Đóng bảng danh sách phím tắt này", "Toggle this shortcuts dialog"),
           icon: <Keyboard className="w-4 h-4 text-cyan-400" />,
         },
         {
           keys: ['Esc'],
-          description: 'Đóng hộp thoại đang mở hoặc hủy tác vụ',
+          description: text("Đóng hộp thoại đang mở hoặc hủy tác vụ", "Close the current dialog or cancel the task"),
           icon: <X className="w-4 h-4 text-rose-400" />,
         },
       ],
@@ -100,20 +103,20 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                Phím tắt bàn phím OjGen
+                {text('Phím tắt bàn phím OjGen', 'OjGen keyboard shortcuts')}
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
                   Global Shortcuts
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
-                Thao tác nhanh chóng từ mọi vị trí trong ứng dụng
+                {text('Thao tác nhanh chóng từ mọi vị trí trong ứng dụng', 'Quick actions from anywhere in the application')}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-            title="Đóng (Esc)"
+            title={text('Đóng (Esc)', 'Close (Esc)')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -178,17 +181,17 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         {/* Modal Footer */}
         <div className="px-6 py-3 border-t border-slate-800 bg-slate-950/70 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
-            <span>Mẹo: Bạn có thể nhấn</span>
+            <span>{text('Mẹo: Bạn có thể nhấn', 'Tip: Press')}</span>
             <kbd className="px-1.5 py-0.5 text-[11px] font-mono bg-slate-800 text-slate-200 border border-slate-700 rounded">
               ?
             </kbd>
-            <span>bất kỳ lúc nào để bật bảng này.</span>
+            <span>{text('bất kỳ lúc nào để bật bảng này.', 'at any time to open this dialog.')}</span>
           </div>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition"
           >
-            Đã hiểu
+            {text('Đã hiểu', 'Got it')}
           </button>
         </div>
       </div>
