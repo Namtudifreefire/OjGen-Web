@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from '../i18n';
 import { GeneratedTestCase, Problem, Config } from '../core/types';
 import { normalizeOutput, runJavaScript } from '../core/solutionRunner';
+import { Card, CardHeader } from './ui/Card';
+import { Button } from './ui/Button';
+import { GitCompareArrows, Play, Square, Code2, Info, Minimize2 } from 'lucide-react';
 
 interface Props {
   currentProblem: Problem;
@@ -112,29 +115,44 @@ export const DifferentialTab: React.FC<Props> = ({ currentProblem, config, gener
   };
 
   return (
-    <div style={{ padding: 'var(--spacing-4)', maxWidth: 1100, width: '100%', margin: '0 auto', color: 'var(--surface-text-primary)' }}>
-      <h2>{text('Kiểm thử đối chiếu', 'Differential testing')}</h2>
-      <p>{text('Chạy lời giải JavaScript với các test đã tạo; hàm solve(input) phải trả về output. Mỗi test có giới hạn 1,5 giây.', 'Run a JavaScript solution against generated tests; solve(input) must return output. Each test has a 1.5 second limit.')}</p>
-      <p>{text('C++/Python/Java cần môi trường thực thi riêng và chưa được hỗ trợ tại đây.', 'C++/Python/Java require an external execution environment and are not supported here.')}</p>
-      <label htmlFor="candidate-code">{text('Lời giải JavaScript', 'JavaScript solution')}</label>
-      <textarea id="candidate-code" value={code} disabled={running || shrinking} onChange={e => { setCode(e.target.value); setResults([]); setMinimized(null); }} rows={9}
-        style={{ display: 'block', width: '100%', padding: 12, margin: '8px 0', background: 'var(--surface-sunken)', color: 'var(--surface-text-primary)', border: '1px solid var(--surface-border)', borderRadius: 8, fontFamily: 'monospace' }} />
-      <button type="button" onClick={run} disabled={running || shrinking || generatedTests.length === 0}>
-        {running ? text(`Đang chạy ${progress}/${generatedTests.length}...`, `Running ${progress}/${generatedTests.length}...`) : text(`Chạy đối chiếu (${generatedTests.length} test)`, `Run comparison (${generatedTests.length} tests)`)}
-      </button>
-      {(running || shrinking) && <button type="button" onClick={() => controllerRef.current?.abort()}>{text('Dừng', 'Stop')}</button>}
-      {runError && <p role="alert">{runError}</p>}
-      {generatedTests.length === 0 && <p>{text('Hãy tạo hoặc nhập test trước.', 'Generate or import tests first.')}</p>}
-      {results.length > 0 && <div aria-live="polite">
-        <h3>{text('Kết quả', 'Results')}</h3>
-        {results.map(result => <div key={result.test.index} style={{ borderBottom: '1px solid var(--surface-border)', padding: '8px 0' }}>
-          <strong>{result.test.fileName}: {result.verdict}</strong>
-          {result.verdict !== 'AC' && <><pre style={{ whiteSpace: 'pre-wrap' }}>{text('Output:', 'Output:')} {result.output}</pre>
-            <pre style={{ whiteSpace: 'pre-wrap' }}>{text('Mong đợi:', 'Expected:')} {result.test.output}</pre>
-            <button type="button" disabled={running || shrinking} onClick={() => shrink(result)}>{shrinking ? text('Đang thu nhỏ...', 'Shrinking...') : text('Thu nhỏ test này', 'Shrink this test')}</button></>}
-        </div>)}
-      </div>}
-      {minimized !== null && <section><h3>{text('Input sau khi thử thu nhỏ', 'Input after shrinking')}</h3><pre style={{ whiteSpace: 'pre-wrap' }}>{minimized}</pre><p>{text('Chỉ thử rút ngắn input dạng mảng hai dòng; kết quả có thể chưa tối thiểu.', 'Only two-line array inputs are reduced; the result may not be minimal.')}</p></section>}
+    <div style={{ padding: 'var(--spacing-4)', maxWidth: 1200, width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)', color: 'var(--surface-text-primary)' }}>
+      <Card padding="lg">
+        <CardHeader
+          icon={<GitCompareArrows size={19} style={{ color: 'var(--color-primary-500)' }} />}
+          title={text('Kiểm thử đối chiếu & Thu nhỏ lỗi', 'Differential testing & shrinking')}
+          subtitle={text(`${generatedTests.length} test · JavaScript · Giới hạn 1,5 giây mỗi test`, `${generatedTests.length} tests · JavaScript · 1.5 seconds per test`)}
+        />
+        <div style={{ display: 'flex', gap: 'var(--spacing-2)', alignItems: 'flex-start', padding: 'var(--spacing-3)', marginBottom: 'var(--spacing-4)', borderRadius: 'var(--radius-default)', backgroundColor: 'var(--surface-sunken)', color: 'var(--surface-text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.5 }}>
+          <Info size={18} style={{ flexShrink: 0, color: 'var(--color-primary-500)' }} />
+          <span>{text('Viết hàm solve(input) trả về output dưới dạng chuỗi. C++/Python/Java cần môi trường thực thi riêng và chưa được hỗ trợ.', 'Write a solve(input) function that returns output as a string. C++/Python/Java require an external runtime and are not supported here.')}</span>
+        </div>
+        <label htmlFor="candidate-code" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)', fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', marginBottom: 'var(--spacing-2)' }}><Code2 size={17} />{text('Lời giải JavaScript', 'JavaScript solution')}</label>
+        <textarea id="candidate-code" value={code} disabled={running || shrinking} onChange={e => { setCode(e.target.value); setResults([]); setMinimized(null); }} rows={9}
+          style={{ display: 'block', width: '100%', minHeight: 210, padding: 'var(--spacing-3)', background: 'var(--surface-sunken)', color: 'var(--surface-text-primary)', border: '1px solid var(--surface-border)', borderRadius: 'var(--radius-default)', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', lineHeight: 1.6, resize: 'vertical' }} />
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--spacing-3)', marginTop: 'var(--spacing-4)' }}>
+          <Button variant="primary" leftIcon={<Play size={16} />} onClick={run} disabled={running || shrinking || generatedTests.length === 0}>
+            {running ? text(`Đang chạy ${progress}/${generatedTests.length}...`, `Running ${progress}/${generatedTests.length}...`) : text(`Chạy đối chiếu (${generatedTests.length} test)`, `Run comparison (${generatedTests.length} tests)`)}
+          </Button>
+          {(running || shrinking) && <Button variant="secondary" leftIcon={<Square size={15} />} onClick={() => controllerRef.current?.abort()}>{text('Dừng', 'Stop')}</Button>}
+          {generatedTests.length === 0 && <span style={{ color: 'var(--surface-text-muted)', fontSize: 'var(--text-sm)' }}>{text('Hãy tạo hoặc nhập test trước.', 'Generate or import tests first.')}</span>}
+        </div>
+        {runError && <p role="alert" style={{ color: 'var(--color-error)', marginTop: 'var(--spacing-3)' }}>{runError}</p>}
+      </Card>
+      {results.length > 0 && <Card padding="lg">
+        <CardHeader title={text('Kết quả đối chiếu', 'Comparison results')} subtitle={text(`Đã kiểm tra ${results.length} test`, `Checked ${results.length} tests`)} />
+        <div aria-live="polite" style={{ display: 'grid', gap: 'var(--spacing-3)' }}>
+          {results.map(result => <div key={result.test.index} style={{ border: '1px solid var(--surface-border)', borderRadius: 'var(--radius-default)', padding: 'var(--spacing-3)', background: 'var(--surface-sunken)' }}>
+            <div style={{ display: 'flex', gap: 'var(--spacing-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+              <strong style={{ fontSize: 'var(--text-sm)' }}>{result.test.fileName}</strong>
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: result.verdict === 'AC' ? 'var(--color-success)' : 'var(--color-error)' }}>{result.verdict}</span>
+            </div>
+            {result.verdict !== 'AC' && <><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', margin: 'var(--spacing-2) 0', fontSize: 'var(--text-xs)' }}>{text('Output:', 'Output:')} {result.output}</pre>
+              <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', margin: 'var(--spacing-2) 0', fontSize: 'var(--text-xs)' }}>{text('Mong đợi:', 'Expected:')} {result.test.output}</pre>
+              <Button variant="secondary" size="sm" leftIcon={<Minimize2 size={14} />} disabled={running || shrinking} onClick={() => shrink(result)}>{shrinking ? text('Đang thu nhỏ...', 'Shrinking...') : text('Thu nhỏ test này', 'Shrink this test')}</Button></>}
+          </div>)}
+        </div>
+      </Card>}
+      {minimized !== null && <Card padding="lg"><CardHeader title={text('Input sau khi thử thu nhỏ', 'Input after shrinking')} subtitle={text('Chỉ thử rút ngắn input dạng mảng hai dòng; kết quả có thể chưa tối thiểu.', 'Only two-line array inputs are reduced; the result may not be minimal.')} /><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', margin: 0, padding: 'var(--spacing-3)', background: 'var(--surface-sunken)', borderRadius: 'var(--radius-default)' }}>{minimized}</pre></Card>}
     </div>
   );
 };
