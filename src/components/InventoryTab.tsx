@@ -272,7 +272,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setSelectedTestIndex(row.index)}
+            onClick={() => { setSelectedTestIndex(row.index); setViewMode('visualize'); }}
             aria-label={text('Xem chi tiết', 'View details')}
           >
             {eyeIcon}

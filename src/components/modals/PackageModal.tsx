@@ -30,11 +30,13 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   const [format, setFormat] = useState<'OjGen' | 'Kattis'>('OjGen');
   const [packageName, setPackageName] = useState<string>(statement.code || problem.id);
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleExport = async () => {
     setIsExporting(true);
+    setExportError(null);
     try {
       const blob = await ProblemPackageExporter.createZip({
         format,
@@ -52,7 +54,9 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       setIsExporting(false);
       onClose();
     } catch (err: any) {
-      alert(text(`Lỗi đóng gói: ${err.message}`, `Packaging failed: ${err.message}`));
+      const message = text(`Lỗi đóng gói: ${err.message}`, `Packaging failed: ${err.message}`);
+      setExportError(message);
+      onAddLog(message, 'error');
       setIsExporting(false);
     }
   };
@@ -71,6 +75,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         </div>
 
         <div className="p-4 space-y-3.5 text-xs">
+          {exportError && <div role="alert" className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400">{exportError}</div>}
           <div>
             <label className="block font-medium text-slate-300 mb-1">{text("Tên gói (Package Name)", "Package name")}</label>
             <input

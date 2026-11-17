@@ -43,11 +43,16 @@ export class ErrorBoundary extends Component<Props, State> {
     window.location.reload();
   };
 
-  private handleCopy = () => {
+  private handleCopy = async () => {
     const text = `OjGen Web Error:\n${this.state.error?.message || ''}\n\nStack:\n${this.state.error?.stack || ''}\n\nComponent Stack:\n${this.state.errorInfo?.componentStack || ''}`;
-    navigator.clipboard?.writeText(text).catch(() => {});
-    this.setState({ copied: true });
-    setTimeout(() => this.setState({ copied: false }), 2000);
+    try {
+      if (!navigator.clipboard) return;
+      await navigator.clipboard.writeText(text);
+      this.setState({ copied: true });
+      setTimeout(() => this.setState({ copied: false }), 2000);
+    } catch {
+      this.setState({ copied: false });
+    }
   };
 
   public render() {

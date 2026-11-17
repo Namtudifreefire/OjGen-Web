@@ -79,15 +79,13 @@ export const ImportTestsModal: React.FC<ImportTestsModalProps> = ({
         // Match pairs by base name
         for (const [inpPath, inpContent] of inpFiles) {
           const baseName = inpPath.replace(/\.(inp|in)$/i, '');
-          let outContent = '';
-          let outPath = '';
+          let outContent: string | undefined;
 
           // Try to find matching output
           for (const [oPath, oContent] of outFiles) {
             const oBase = oPath.replace(/\.(out|ans)$/i, '');
             if (oBase === baseName || oPath === inpPath.replace(/\.(inp|in)$/i, '.out')) {
               outContent = oContent;
-              outPath = oPath;
               break;
             }
           }
@@ -99,7 +97,7 @@ export const ImportTestsModal: React.FC<ImportTestsModalProps> = ({
             continue;
           }
 
-          const out = outContent || problem.solve(inpContent.endsWith('\n') ? inpContent : inpContent + '\n', config);
+          const out = outContent ?? problem.solve(inpContent.endsWith('\n') ? inpContent : inpContent + '\n', config);
 
           tests.push({
             index: tests.length + 1,
@@ -130,7 +128,7 @@ export const ImportTestsModal: React.FC<ImportTestsModalProps> = ({
 
         for (const [inpName, inpContent] of inpFiles) {
           const baseName = inpName.replace(/\.(inp|in)$/i, '');
-          let outContent = '';
+          let outContent: string | undefined;
 
           for (const [oName, oContent] of outFiles) {
             const oBase = oName.replace(/\.(out|ans)$/i, '');
@@ -146,7 +144,7 @@ export const ImportTestsModal: React.FC<ImportTestsModalProps> = ({
             continue;
           }
 
-          const out = outContent || problem.solve(inpContent.endsWith('\n') ? inpContent : inpContent + '\n', config);
+          const out = outContent ?? problem.solve(inpContent.endsWith('\n') ? inpContent : inpContent + '\n', config);
 
           tests.push({
             index: tests.length + 1,

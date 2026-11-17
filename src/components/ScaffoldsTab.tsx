@@ -14,7 +14,7 @@ interface ScaffoldsTabProps {
 }
 
 const VALIDATOR_TEMPLATES = {
-  cpp: `// Validator cho ${''} - Tự động sinh bởi OjGen
+  cpp: `// Validator cho \${currentProblem} - Tự động sinh bởi OjGen
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -82,7 +82,7 @@ int main() {
     }
 }`,
 
-  python: `# Validator cho ${''} - Tự động sinh bởi OjGen
+  python: `# Validator cho \${currentProblem} - Tự động sinh bởi OjGen
 import sys
 
 def validate():
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         sys.exit(1)
 `,
 
-  javascript: `// Validator cho ${''} - Tự động sinh bởi OjGen
+  javascript: `// Validator cho \${currentProblem} - Tự động sinh bởi OjGen
 const fs = require('fs');
 
 function validate() {
@@ -312,7 +312,7 @@ export const ScaffoldsTab: React.FC<ScaffoldsTabProps> = ({ currentProblem, onAd
     let code = '';
     if (activeCategory === 'validator') {
       const template = VALIDATOR_TEMPLATES[language];
-      code = template.replace('${currentProblem}', currentProblem.title);
+      code = template.replace('${currentProblem}', problemTitle(currentProblem, uiLanguage));
     } else {
       const checkerKeys = {
         checker_token: 'token_cpp',
@@ -347,7 +347,7 @@ export const ScaffoldsTab: React.FC<ScaffoldsTabProps> = ({ currentProblem, onAd
   };
 
   const downloadFile = () => {
-    const ext = activeCategory === 'validator' || activeCategory === 'checker_testlib' ? 'cpp' :
+    const ext = activeCategory === 'validator' ? (language === 'python' ? 'py' : language === 'javascript' ? 'js' : 'cpp') : activeCategory === 'checker_testlib' ? 'cpp' :
                 activeCategory === 'checker_custom' ? 'js' : 'cpp';
     const blob = new Blob([generatedCode], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);

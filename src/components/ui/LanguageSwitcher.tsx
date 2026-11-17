@@ -27,7 +27,8 @@ const DropdownMenu: React.FC<{
   items: MenuItem[];
   align?: 'left' | 'right';
   width?: string;
-}> = ({ trigger, items, align = 'left', width = '160px' }) => {
+  label: string;
+}> = ({ trigger, items, align = 'left', width = '160px', label }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -45,6 +46,9 @@ const DropdownMenu: React.FC<{
     <div className="relative" style={{ display: 'inline-flex' }}>
       <button
         ref={triggerRef}
+        aria-label={label}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
         style={{
@@ -165,7 +169,7 @@ export const LanguageSwitcher: React.FC = () => {
   return (
     <DropdownMenu
       trigger={
-        <button
+        <span
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -182,12 +186,12 @@ export const LanguageSwitcher: React.FC = () => {
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface-hover)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-          aria-label={t('header.language')}
         >
           <Globe className="w-4 h-4" />
           <span>{language === 'vi' ? '🇻🇳 VI' : '🇺🇸 EN'}</span>
-        </button>
+        </span>
       }
+      label={t('header.language')}
       items={menuItems}
       align="right"
       width="160px"
