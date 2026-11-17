@@ -9,7 +9,8 @@ export interface ScaffoldTemplate {
 }
 
 export class AuthoringScaffolds {
-  public static build(problem: Problem, config: Config): ScaffoldTemplate[] {
+  public static build(problem: Problem, config: Config, lang: 'vi' | 'en' = 'vi'): ScaffoldTemplate[] {
+    const isEn = lang === 'en';
     const problemHint = problem.formatDescription
       .trimEnd()
       .split('\n')
@@ -25,7 +26,7 @@ export class AuthoringScaffolds {
     return [
       {
         key: 'validator_cpp',
-        displayName: 'Validator C++ (standalone)',
+        displayName: isEn ? 'Validator C++ (Standalone)' : 'Validator C++ (standalone)',
         fileName: 'validator.cpp',
         source: `#include <bits/stdc++.h>
 using namespace std;
@@ -39,17 +40,19 @@ int main(int argc, char** argv) {
     istream& in = (argc > 1) ? static_cast<istream&>(file) : cin;
     if (!in) { cerr << "cannot open input\\n"; return 1; }
 
-    // Ràng buộc cấu trúc theo khuôn:
+    ${isEn ? '// Structural format constraints:' : '// Ràng buộc cấu trúc theo khuôn:'}
 ${problemHint}
 ${configHint}
 
-    // TODO: Đọc và kiểm tra các giới hạn
+    ${isEn ? '// TODO: Read and validate boundary constraints' : '// TODO: Đọc và kiểm tra các giới hạn'}
     string extra;
     if (in >> extra) { cerr << "extra token: " << extra << "\\n"; return 1; }
     return 0; // 0 = valid input
 }
 `,
-        readme: 'Validator C++ độc lập: nhận argv[1] là đường dẫn file input hoặc đọc từ stdin. Trả về mã 0 nếu hợp lệ, mã 1 nếu vi phạm.',
+        readme: isEn
+          ? 'Standalone C++ Validator: takes argv[1] as input file path or reads from stdin. Returns exit code 0 if valid, 1 on violation.'
+          : 'Validator C++ độc lập: nhận argv[1] là đường dẫn file input hoặc đọc từ stdin. Trả về mã 0 nếu hợp lệ, mã 1 nếu vi phạm.',
       },
       {
         key: 'validator_py',
@@ -59,7 +62,7 @@ ${configHint}
 import sys
 from pathlib import Path
 
-# Ràng buộc cấu trúc theo khuôn:
+${isEn ? '# Structural format constraints:' : '# Ràng buộc cấu trúc theo khuôn:'}
 ${problem.formatDescription.trimEnd().split('\n').map(l => '# ' + l).join('\n')}
 
 raw = Path(sys.argv[1]).read_text(encoding="utf-8") if len(sys.argv) > 1 else sys.stdin.read()
@@ -72,7 +75,9 @@ if not lines:
 print("Valid input")
 sys.exit(0)
 `,
-        readme: 'Validator Python: kiểm tra tính hợp lệ của input. Trả về mã 0 khi hợp lệ.',
+        readme: isEn
+          ? 'Python Validator: validates testcase structure against problem constraints. Returns exit code 0 when valid.'
+          : 'Validator Python: kiểm tra tính hợp lệ của input. Trả về mã 0 khi hợp lệ.',
       },
       {
         key: 'checker_cpp',
@@ -104,7 +109,9 @@ int main(int argc, char** argv) {
     return 0;
 }
 `,
-        readme: 'Checker so sánh token chuẩn: so sánh từng từ của lời giải thí sinh và đáp án chuẩn.',
+        readme: isEn
+          ? 'Standard token comparison checker: compares tokens of contestant output and reference answer.'
+          : 'Checker so sánh token chuẩn: so sánh từng từ của lời giải thí sinh và đáp án chuẩn.',
       },
       {
         key: 'checker_testlib',
@@ -125,11 +132,13 @@ int main(int argc, char* argv[]) {
     quitf(_ok, "answers match");
 }
 `,
-        readme: 'Checker theo chuẩn testlib.h của Codeforces/Polygon.',
+        readme: isEn
+          ? 'Standard Codeforces/Polygon testlib.h custom checker.'
+          : 'Checker theo chuẩn testlib.h của Codeforces/Polygon.',
       },
       {
         key: 'checker_py_float',
-        displayName: 'Checker Python (Sai số số thực)',
+        displayName: isEn ? 'Checker Python (Floating-point Tolerance)' : 'Checker Python (Sai số số thực)',
         fileName: 'checker_float.py',
         source: `#!/usr/bin/env python3
 import math, sys
@@ -157,7 +166,9 @@ for a, b in zip(got, expected):
 print("Accepted")
 sys.exit(0)
 `,
-        readme: 'So sánh từng số thực với rel_tol=1e-6, abs_tol=1e-8.',
+        readme: isEn
+          ? 'Floating-point number comparison with relative tolerance 1e-6 and absolute tolerance 1e-8.'
+          : 'So sánh từng số thực với rel_tol=1e-6, abs_tol=1e-8.',
       },
     ];
   }

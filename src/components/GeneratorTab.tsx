@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Square,
   Loader2,
+  Copy,
 } from 'lucide-react';
 import { Problem, Config, TestGroupSpec, ManualTestCase, GeneratedTestCase } from '../core/types';
 import { Rng } from '../core/rng';
@@ -82,6 +83,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>(currentProblem.mainCategory);
   const [samplePreview, setSamplePreview] = useState<string>('');
+  const [sampleCopied, setSampleCopied] = useState(false);
   const [isFormatOpen, setIsFormatOpen] = useState<boolean>(true);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
@@ -124,6 +126,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
   }, [currentProblem.id]);
 
   const handlePreview = () => {
+    setSampleCopied(false);
     try {
       const err = currentProblem.validateConfig(config);
       if (err) {
@@ -629,7 +632,19 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
             }}
           >
             {samplePreview ? (
-              <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{samplePreview}</pre>
+              <>
+                <Button variant="secondary" size="sm" leftIcon={<Copy className="w-3.5 h-3.5" />} onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(samplePreview);
+                    setSampleCopied(true);
+                  } catch {
+                    onAddLog(text('Không thể sao chép nội dung mẫu.', 'Could not copy the sample.'), 'error');
+                  }
+                }}>
+                  {sampleCopied ? text('Đã sao chép', 'Copied') : text('Sao chép', 'Copy')}
+                </Button>
+                <pre style={{ margin: 'var(--spacing-2) 0 0', whiteSpace: 'pre-wrap' }}>{samplePreview}</pre>
+              </>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--surface-text-muted)', fontSize: 'var(--text-xs)', fontStyle: 'italic' }}>
                 {text('Nhấn "Kiểm tra input mẫu" để xem trước định dạng input và output chuẩn', 'Select “Preview test” to see an input and reference output.')}

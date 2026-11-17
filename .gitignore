@@ -20,3 +20,7 @@ ojgen_settings.ini
 Thumbs.db
 Desktop.ini
 dist/
+node_modules/
+.playwright-cli/
+.env
+.env.local

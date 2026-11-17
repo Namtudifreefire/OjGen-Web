@@ -45,7 +45,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
       let saved: string | null = null;
-      try { saved = localStorage.getItem('ojgen-language'); } catch { /* Storage is optional. */ }
+      try { saved = localStorage.getItem('ojgen-language') ?? localStorage.getItem('ojgen_lang'); } catch { /* Storage is optional. */ }
       if (saved === 'vi' || saved === 'en') return saved;
       // Detect browser language
       const browserLang = navigator.language.toLowerCase();
