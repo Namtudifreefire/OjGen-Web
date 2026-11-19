@@ -1,4 +1,5 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
+import { useTranslation } from '../../i18n';
 
 /**
  * Unified Table Component - Consistent table styling
@@ -32,8 +33,6 @@ export interface TableProps<T> {
   style?: React.CSSProperties;
 }
 
-const defaultEmptyMessage = 'Không có dữ liệu';
-
 export function Table<T>({
   columns,
   data,
@@ -46,12 +45,14 @@ export function Table<T>({
   hoverable = true,
   bordered = true,
   compact = false,
-  emptyMessage = defaultEmptyMessage,
+  emptyMessage,
   loading = false,
   loadingRows = 5,
   className = '',
   style,
 }: TableProps<T>) {
+  const { t, language } = useTranslation();
+  const resolvedEmptyMessage = emptyMessage ?? t('common.noData');
   const handleRowClick = (row: T, index: number) => {
     if (selectable && onSelectionChange) {
       const key = keyExtractor(row);
@@ -192,7 +193,7 @@ export function Table<T>({
                   fontSize: 'var(--text-sm)',
                 }}
               >
-                {emptyMessage}
+                {resolvedEmptyMessage}
               </td>
             </tr>
           </tbody>
@@ -228,7 +229,7 @@ export function Table<T>({
                     accentColor: 'var(--color-primary-600)',
                     cursor: 'pointer',
                   }}
-                  aria-label="Chọn tất cả"
+                  aria-label={t('buttons.selectAll')}
                 />
               </th>
             )}
@@ -301,7 +302,7 @@ export function Table<T>({
                         accentColor: 'var(--color-primary-600)',
                         cursor: 'pointer',
                       }}
-                      aria-label={`Chọn dòng ${rowIndex + 1}`}
+                      aria-label={language === 'en' ? `Select row ${rowIndex + 1}` : `Chọn dòng ${rowIndex + 1}`}
                     />
                   </td>
                 )}
@@ -348,12 +349,13 @@ export const KeyValueTable: React.FC<KeyValueTableProps> = ({
   labelWidth = '200px',
   valueRender,
 }) => {
+  const { t } = useTranslation();
   const entries = Object.entries(data).filter(([, v]) => v !== undefined && v !== null && v !== '');
 
   if (entries.length === 0) {
     return (
       <div style={{ padding: 'var(--spacing-4)', color: 'var(--surface-text-muted)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
-        Không có dữ liệu
+        {t('common.noData')}
       </div>
     );
   }

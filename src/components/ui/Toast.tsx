@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 /**
  * Toast Notification System
@@ -52,6 +53,7 @@ const typeConfig = {
 };
 
 const ToastItem: React.FC<ToastProps> = ({ toast, onClose }) => {
+  const { t } = useTranslation();
   const config = typeConfig[toast.type];
   const Icon = config.icon;
 
@@ -167,7 +169,7 @@ const ToastItem: React.FC<ToastProps> = ({ toast, onClose }) => {
           e.currentTarget.style.backgroundColor = 'transparent';
           e.currentTarget.style.color = 'var(--surface-text-muted)';
         }}
-        aria-label="Đóng thông báo"
+        aria-label={t('buttons.close')}
       >
         <X className="w-4 h-4" />
       </button>

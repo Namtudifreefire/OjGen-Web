@@ -26,8 +26,20 @@ export const ImportTestsModal: React.FC<ImportTestsModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<'zip' | 'folder'>('zip');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
+
+  const switchMode = (nextMode: 'zip' | 'folder') => {
+    setMode(nextMode);
+    setFiles([]);
+    setParsedTests([]);
+    setZipStructure([]);
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files || []);
@@ -194,7 +206,12 @@ export const ImportTestsModal: React.FC<ImportTestsModalProps> = ({
             </h3>
             <p className="text-xs text-slate-400">{text("Hỗ trợ cặp file .inp/.in + .out/.ans; tự sinh output nếu thiếu", "Supports .inp/.in and .out/.ans pairs; missing outputs are generated")}</p>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={text('Đóng', 'Close')}
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -204,13 +221,13 @@ export const ImportTestsModal: React.FC<ImportTestsModalProps> = ({
           <div className="flex items-center gap-2 p-2 bg-slate-950 rounded-lg border border-slate-800">
             <span className="text-xs text-slate-400">{text("Chế độ:", "Mode:")}</span>
             <button
-              onClick={() => setMode('zip')}
+              onClick={() => switchMode('zip')}
               className={`px-3 py-1.5 rounded text-xs font-medium transition ${mode === 'zip' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
             >
-              File ZIP
+              {text('Tệp ZIP', 'ZIP file')}
             </button>
             <button
-              onClick={() => setMode('folder')}
+              onClick={() => switchMode('folder')}
               className={`px-3 py-1.5 rounded text-xs font-medium transition ${mode === 'folder' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
             >{text("Chọn nhiều file", "Select multiple files")}
             </button>
@@ -218,21 +235,37 @@ export const ImportTestsModal: React.FC<ImportTestsModalProps> = ({
 
           {/* File Input */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-2">
+            <span id="import-tests-file-label" className="block text-xs font-medium text-slate-300 mb-2">
               {mode === 'zip' ? text("Chọn file ZIP chứa test", "Select a ZIP containing tests") : text("Chọn các file .inp/.in và .out/.ans", "Select .inp/.in and .out/.ans files")}
-            </label>
-            <input
-              type="file"
-              multiple={mode === 'folder'}
-              accept={mode === 'zip' ? '.zip' : '.inp,.in,.out,.ans'}
-              onChange={handleFileSelect}
-              className="w-full text-xs bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-2 text-slate-200 file:mr-3 file:px-3 file:py-1 file:rounded file:border-0 file:bg-blue-600 file:text-white file:text-xs hover:file:bg-blue-500"
-            />
-            {files.length > 0 && (
-              <p className="text-[11px] text-slate-400 mt-1 font-mono">
-                {mode === 'zip' ? files[0].name : `${files.length} ${text('file được chọn', 'files selected')}`}
-              </p>
-            )}
+            </span>
+            <div className="flex items-center gap-3 w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-2">
+              <input
+                ref={fileInputRef}
+                id="import-tests-file-input"
+                type="file"
+                multiple={mode === 'folder'}
+                accept={mode === 'zip' ? '.zip' : '.inp,.in,.out,.ans'}
+                onChange={handleFileSelect}
+                tabIndex={-1}
+                aria-hidden="true"
+                className="sr-only"
+              />
+              <button
+                type="button"
+                aria-describedby="import-tests-file-label"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                {text('Chọn tệp', mode === 'folder' ? 'Choose files' : 'Choose file')}
+              </button>
+              <span className="text-xs text-slate-300 truncate">
+                {files.length === 0
+                  ? text('Không tệp nào được chọn', mode === 'folder' ? 'No files chosen' : 'No file chosen')
+                  : mode === 'zip'
+                  ? files[0].name
+                  : `${files.length} ${text('file được chọn', files.length === 1 ? 'file selected' : 'files selected')}`}
+              </span>
+            </div>
           </div>
 
           {error && (
@@ -297,7 +330,7 @@ export const ImportTestsModal: React.FC<ImportTestsModalProps> = ({
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold disabled:opacity-50"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>{text("Nhập", "Import")} {parsedTests.length} test</span>
+            <span>{text("Nhập", "Import")} {parsedTests.length} {text("test", parsedTests.length === 1 ? "test" : "tests")}</span>
           </button>
         </div>
       </div>

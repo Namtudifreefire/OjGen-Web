@@ -246,11 +246,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   title,
   message,
-  confirmText = 'Xác nhận',
-  cancelText = 'Hủy',
+  confirmText,
+  cancelText,
   variant = 'primary',
   loading = false,
 }) => {
+  const { t } = useTranslation();
+  const resolvedConfirmText = confirmText ?? t('buttons.confirm');
+  const resolvedCancelText = cancelText ?? t('buttons.cancel');
   const variantMap = {
     danger: { btnVariant: 'danger' as const, iconColor: 'var(--color-error)' },
     primary: { btnVariant: 'primary' as const, iconColor: 'var(--color-primary-600)' },
@@ -268,10 +271,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       footer={
         <>
           <Button variant="ghost" onClick={onClose} disabled={loading}>
-            {cancelText}
+            {resolvedCancelText}
           </Button>
           <Button variant={btnVariant} onClick={onConfirm} loading={loading}>
-            {confirmText}
+            {resolvedConfirmText}
           </Button>
         </>
       }
@@ -356,6 +359,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({
   message,
   variant = 'info',
 }) => {
+  const { t } = useTranslation();
   const variantConfig = {
     success: { bg: 'var(--color-success-light)', color: 'var(--color-success-dark)', icon: 'var(--color-success)' },
     error: { bg: 'var(--color-error-light)', color: 'var(--color-error-dark)', icon: 'var(--color-error)' },
@@ -371,7 +375,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({
       size="sm"
       footer={
         <Button variant="primary" onClick={onClose}>
-          Đóng
+          {t('buttons.close')}
         </Button>
       }
     >

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../i18n';
 
 /**
  * Unified Badge Component - For status indicators, labels, counts
@@ -148,13 +149,15 @@ export interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', className = '' }) => {
+  const { language } = useTranslation();
+  const isEn = language === 'en';
   const config = {
-    pending: { variant: 'warning' as BadgeVariant, label: 'Đang chờ', dot: true },
-    running: { variant: 'info' as BadgeVariant, label: 'Đang chạy', dot: true },
-    success: { variant: 'success' as BadgeVariant, label: 'Thành công', dot: true },
-    error: { variant: 'error' as BadgeVariant, label: 'Lỗi', dot: true },
-    warning: { variant: 'warning' as BadgeVariant, label: 'Cảnh báo', dot: true },
-    idle: { variant: 'default' as BadgeVariant, label: 'Sẵn sàng', dot: false },
+    pending: { variant: 'warning' as BadgeVariant, label: isEn ? 'Pending' : 'Đang chờ', dot: true },
+    running: { variant: 'info' as BadgeVariant, label: isEn ? 'Running' : 'Đang chạy', dot: true },
+    success: { variant: 'success' as BadgeVariant, label: isEn ? 'Success' : 'Thành công', dot: true },
+    error: { variant: 'error' as BadgeVariant, label: isEn ? 'Error' : 'Lỗi', dot: true },
+    warning: { variant: 'warning' as BadgeVariant, label: isEn ? 'Warning' : 'Cảnh báo', dot: true },
+    idle: { variant: 'default' as BadgeVariant, label: isEn ? 'Ready' : 'Sẵn sàng', dot: false },
   }[status];
 
   return <Badge variant={config.variant} size={size} dot={config.dot} className={className}>{config.label}</Badge>;

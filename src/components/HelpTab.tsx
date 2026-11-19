@@ -372,7 +372,7 @@ export const HelpTab: React.FC<HelpTabProps> = () => {
       <Card>
         <CardHeader
           title={text("Trợ giúp & Hướng dẫn", "Help & guide")}
-          subtitle="OjGen 3.3.0 Web Edition - Competitive Programming Test Generator"
+          subtitle={text("OjGen 3.3.0 Web Edition - Công cụ tạo bộ test cho lập trình thi đấu", "OjGen 3.3.0 Web Edition - Competitive Programming Test Generator")}
           icon={bookOpenIcon}
         />
 

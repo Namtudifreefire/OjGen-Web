@@ -306,7 +306,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
       <Card>
         <CardHeader
           title={text('Kiểm kê bộ test', 'Test inventory')}
-          subtitle={`${tests.length} ${text('test', 'tests')} · ${groups.length} ${text('nhóm', 'groups')}`}
+          subtitle={`${tests.length} ${text('test', tests.length === 1 ? 'test' : 'tests')} · ${groups.length} ${text('nhóm', groups.length === 1 ? 'group' : 'groups')}`}
           action={
             <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
               <Button variant="secondary" size="sm" leftIcon={downloadIcon} onClick={exportCsv}>
