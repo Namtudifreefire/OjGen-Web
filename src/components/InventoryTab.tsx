@@ -7,6 +7,7 @@ import { Input, Select } from './ui/Input';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { Table } from './ui/Table';
+import { TestPreviewModal } from './modals/TestPreviewModal';
 
 const downloadIcon = <Download className="w-3.5 h-3.5" />;
 const chevronLeftIcon = <ChevronLeft className="w-3.5 h-3.5" />;
@@ -32,6 +33,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
   const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(tests[0]?.index ?? null);
   const [viewMode, setViewMode] = useState<'text' | 'visualize'>('text');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const groups = Array.from(new Set(tests.map((t) => t.groupName)));
 
@@ -49,9 +51,16 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
     setSelectedGroup('all');
     setSearchTerm('');
     setViewMode('text');
+    setIsPreviewOpen(false);
   }, [tests]);
 
   const selectedTest = filteredTests.find((test) => test.index === selectedTestIndex) ?? filteredTests[0] ?? null;
+  const selectedPosition = selectedTest ? filteredTests.findIndex((test) => test.index === selectedTest.index) : -1;
+
+  const openPreview = (index: number) => {
+    setSelectedTestIndex(index);
+    setIsPreviewOpen(true);
+  };
 
   const exportCsv = () => {
     const escapeCsv = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
@@ -263,8 +272,11 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => copyTest(row)}
-            aria-label={text('Sao chép test', 'Copy test')}
+            onClick={(e) => {
+              e.stopPropagation();
+              copyTest(row);
+            }}
+            aria-label={text(`Sao chép ${row.fileName}`, `Copy ${row.fileName}`)}
             disabled={copiedIndex === row.index}
           >
             {copiedIndex === row.index ? checkCircleIcon : copyIcon}
@@ -272,8 +284,12 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => { setSelectedTestIndex(row.index); setViewMode('visualize'); }}
-            aria-label={text('Xem chi tiết', 'View details')}
+            onClick={(e) => {
+              e.stopPropagation();
+              openPreview(row.index);
+            }}
+            aria-label={text(`Xem trước ${row.fileName}`, `Preview ${row.fileName}`)}
+            title={text('Xem trước Input / Output', 'Preview Input / Output')}
           >
             {eyeIcon}
           </Button>
@@ -364,7 +380,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                 columns={columns}
                 data={filteredTests}
                 keyExtractor={(row) => String(row.index)}
-                onRowClick={(row) => setSelectedTestIndex(row.index)}
+                onRowClick={(row) => openPreview(row.index)}
                 selectable={false}
                 striped
                 hoverable
@@ -380,10 +396,18 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
                 title={text('Trực quan hóa test', 'Test visualization')}
                 subtitle={selectedTest.fileName}
                 action={
-                  <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
-                    <Button variant="secondary" size="sm" leftIcon={chevronLeftIcon} onClick={handlePrevTest} disabled={filteredTests.indexOf(selectedTest) === 0}>
+                  <div style={{ display: 'flex', gap: 'var(--spacing-2)', alignItems: 'center' }}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      leftIcon={eyeIcon}
+                      onClick={() => openPreview(selectedTest.index)}
+                    >
+                      {text('Xem trước', 'Preview')}
                     </Button>
-                    <Button variant="secondary" size="sm" rightIcon={chevronRightIcon} onClick={handleNextTest} disabled={filteredTests.indexOf(selectedTest) === filteredTests.length - 1}>
+                    <Button variant="secondary" size="sm" leftIcon={chevronLeftIcon} onClick={handlePrevTest} disabled={selectedPosition <= 0} aria-label={text('Test trước', 'Previous test')}>
+                    </Button>
+                    <Button variant="secondary" size="sm" rightIcon={chevronRightIcon} onClick={handleNextTest} disabled={selectedPosition === -1 || selectedPosition >= filteredTests.length - 1} aria-label={text('Test tiếp theo', 'Next test')}>
                     </Button>
                   </div>
                 }
@@ -430,6 +454,18 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ tests, problem }) =>
           )}
         </div>
       )}
+
+      <TestPreviewModal
+        isOpen={isPreviewOpen && selectedTest !== null}
+        onClose={() => setIsPreviewOpen(false)}
+        test={selectedTest}
+        testPosition={selectedPosition >= 0 ? selectedPosition + 1 : 0}
+        totalTests={filteredTests.length}
+        onPrev={handlePrevTest}
+        onNext={handleNextTest}
+        hasPrev={selectedPosition > 0}
+        hasNext={selectedPosition >= 0 && selectedPosition < filteredTests.length - 1}
+      />
     </div>
   );
 };
