@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../i18n';
 import { validationMessage } from '../../i18n/validationMessages';
 import { ManualTestCase, Problem, Config } from '../../core/types';
@@ -24,6 +24,12 @@ export const ManualTestsModal: React.FC<ManualTestsModalProps> = ({
   const { language } = useTranslation();
   const text = (vi: string, en: string) => language === 'en' ? en : vi;
   const [localTests, setLocalTests] = useState<ManualTestCase[]>(manualTests);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLocalTests(manualTests);
+    }
+  }, [isOpen, manualTests]);
 
   if (!isOpen) return null;
 

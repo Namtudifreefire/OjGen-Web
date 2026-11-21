@@ -31,17 +31,60 @@ import { CoverageAnalyzer, CoverageReport } from './core/coverage';
 import { Rng } from './core/rng';
 import { Button } from './components/ui/Button';
 import { I18nProvider, useTranslation } from './i18n';
-import { problemTitle } from './i18n/problemLabels';
+import { problemFormat, problemTitle } from './i18n/problemLabels';
+import { generateSampleTests, normalizeSampleText } from './utils/sampleGenerator';
 
-const defaultStatement = (language: 'vi' | 'en'): ProblemStatement => ({
-  name: language === 'en' ? 'Integer array sum' : 'Mảng số nguyên và tổng phần tử',
-  code: 'SUMARR', timeLimitMs: 1000, memoryLimitMb: 256,
-  description: language === 'en' ? 'Given an array of N integers A1, A2, ..., AN, calculate the sum of its elements.' : 'Cho mảng gồm N số nguyên A1, A2, ..., AN. Hãy tính tổng tất cả các phần tử trong mảng.',
-  inputFormat: language === 'en' ? 'Line 1 contains N (1 ≤ N ≤ 10).\nLine 2 contains N integers A1 ... AN (1 ≤ Ai ≤ 100).' : 'Dòng 1 ghi số nguyên N (1 ≤ N ≤ 10).\nDòng 2 ghi N số nguyên A1 ... AN (1 ≤ Ai ≤ 100).',
-  outputFormat: language === 'en' ? 'Print a single integer: the sum of the array elements.' : 'In ra một số nguyên duy nhất là tổng các phần tử của mảng.',
-  constraints: '1 ≤ N ≤ 10\n1 ≤ Ai ≤ 100',
-  samples: [{ input: '5\n1 2 3 4 5\n', output: '15', explanation: '1 + 2 + 3 + 4 + 5 = 15' }],
-});
+const buildStatementForProblem = (problem: Problem, cfg: Config, language: 'vi' | 'en'): ProblemStatement => {
+  if (problem.id === 'array') {
+    return {
+      name: language === 'en' ? 'Integer array sum' : 'Mảng số nguyên và tổng phần tử',
+      code: 'SUMARR',
+      timeLimitMs: 1000,
+      memoryLimitMb: 256,
+      description:
+        language === 'en'
+          ? 'Given an array of N integers A1, A2, ..., AN, calculate the sum of its elements.'
+          : 'Cho mảng gồm N số nguyên A1, A2, ..., AN. Hãy tính tổng tất cả các phần tử trong mảng.',
+      inputFormat:
+        language === 'en'
+          ? 'Line 1 contains N (1 ≤ N ≤ 10).\nLine 2 contains N integers A1 ... AN (1 ≤ Ai ≤ 100).'
+          : 'Dòng 1 ghi số nguyên N (1 ≤ N ≤ 10).\nDòng 2 ghi N số nguyên A1 ... AN (1 ≤ Ai ≤ 100).',
+      outputFormat:
+        language === 'en'
+          ? 'Print a single integer: the sum of the array elements.'
+          : 'In ra một số nguyên duy nhất là tổng các phần tử của mảng.',
+      constraints: '1 ≤ N ≤ 10\n1 ≤ Ai ≤ 100',
+      samples: [{ input: '5\n1 2 3 4 5', output: '15', explanation: '1 + 2 + 3 + 4 + 5 = 15' }],
+    };
+  }
+
+  const gen = generateSampleTests({
+    problem,
+    config: cfg,
+    count: 1,
+    seed: '2026',
+    compact: true,
+  });
+
+  const title = problemTitle(problem, language);
+  return {
+    name: title,
+    code: problem.id.toUpperCase().replace(/[^A-Z0-9_]/g, '_'),
+    timeLimitMs: 1000,
+    memoryLimitMb: 256,
+    description:
+      language === 'en'
+        ? `Solve the "${title}" problem with the constraints and input/output specification below.`
+        : `Giải bài toán "${title}" theo định dạng dữ liệu vào/ra và các ràng buộc bên dưới.`,
+    inputFormat: problemFormat(problem, language),
+    outputFormat:
+      language === 'en'
+        ? 'Print the answer matching the problem specification.'
+        : 'In ra kết quả chuẩn theo yêu cầu đề bài.',
+    constraints: problem.describeConfig(cfg),
+    samples: gen.samples.length > 0 ? gen.samples : [{ input: '', output: '', explanation: '' }],
+  };
+};
 
 function AppContent() {
   const { t, language } = useTranslation();
@@ -68,14 +111,18 @@ function AppContent() {
   const [groups, setGroups] = useState<TestGroupSpec[]>([]);
   const [manualTests, setManualTests] = useState<ManualTestCase[]>([]);
   const [generatedTests, setGeneratedTests] = useState<GeneratedTestCase[]>([]);
-  const [statement, setStatement] = useState<ProblemStatement>(() => defaultStatement(language));
+  const [statement, setStatement] = useState<ProblemStatement>(() =>
+    buildStatementForProblem(ALL_PROBLEMS[2], ALL_PROBLEMS[2].defaultConfig(), language)
+  );
   const statementIsDefault = useRef(true);
   const updateStatement = (next: ProblemStatement) => {
     statementIsDefault.current = false;
     setStatement(next);
   };
   useEffect(() => {
-    if (statementIsDefault.current) setStatement(defaultStatement(language));
+    if (statementIsDefault.current) {
+      setStatement(buildStatementForProblem(currentProblem, config, language));
+    }
   }, [language]);
 
   // Logs
@@ -146,15 +193,60 @@ function AppContent() {
   const handleSelectProblem = (prob: Problem) => {
     if (prob.id === currentProblem.id) return;
 
+    const nextCfg = prob.defaultConfig();
     setCurrentProblem(prob);
-    setConfig(prob.defaultConfig());
+    setConfig(nextCfg);
     setGroups([]);
     setManualTests([]);
     setGeneratedTests([]);
     setCoverageReport(null);
     setIsCoverageOpen(false);
+    if (statementIsDefault.current) {
+      setStatement(buildStatementForProblem(prob, nextCfg, language));
+    }
     addLog(tr(`Đã chuyển sang khuôn bài "${prob.title}" (${prob.id}); các nhóm và test của khuôn cũ đã được xóa để tránh sai định dạng.`, `Switched to "${problemTitle(prob, language)}" (${prob.id}); previous groups and tests were cleared to avoid format mismatches.`), 'warn');
     showToast(tr("Đã đổi khuôn bài", "Template changed"), tr("Nhóm test và test cũ đã được xóa vì có thể không tương thích với cấu trúc input mới.", "Previous groups and tests were cleared because they may not match the new input format."), 'warn', 5000);
+  };
+
+  const handleAddSampleToStatement = (sample: { input: string; output: string }) => {
+    const cleanInp = normalizeSampleText(sample.input);
+    const cleanOut = normalizeSampleText(sample.output);
+    const hasOnlyBlankPlaceholder =
+      statement.samples.length === 1 &&
+      !statement.samples[0].input.trim() &&
+      !statement.samples[0].output.trim();
+
+    const nextSamples = hasOnlyBlankPlaceholder
+      ? [{ input: cleanInp, output: cleanOut, explanation: '' }]
+      : [...statement.samples, { input: cleanInp, output: cleanOut, explanation: '' }];
+
+    updateStatement({ ...statement, samples: nextSamples });
+    addLog(tr(`Đã thêm ví dụ mới vào đề bài (Tổng: ${nextSamples.length} ví dụ).`, `Added a sample test to the problem statement (${nextSamples.length} total).`), 'success');
+    showToast(
+      tr('Đã thêm vào ví dụ đề bài', 'Added to statement samples'),
+      tr(`Đề bài hiện có ${nextSamples.length} ví dụ mẫu.`, `Statement now has ${nextSamples.length} sample tests.`),
+      'success'
+    );
+  };
+
+  const handleAddSampleToManualTests = (sample: { input: string; output: string }) => {
+    const cleanInp = normalizeSampleText(sample.input);
+    const cleanOut = normalizeSampleText(sample.output);
+    const nextManual: ManualTestCase = {
+      id: Math.random().toString(36).slice(2, 9),
+      name: `Sample ${manualTests.filter((m) => m.isSample).length + 1}`,
+      input: cleanInp.endsWith('\n') ? cleanInp : `${cleanInp}\n`,
+      output: cleanOut,
+      isSample: true,
+      isValid: true,
+    };
+    setManualTests((prev) => [...prev, nextManual]);
+    addLog(tr(`Đã lưu "${nextManual.name}" vào danh sách Test tay (Sample).`, `Saved "${nextManual.name}" to manual sample tests.`), 'success');
+    showToast(
+      tr('Đã lưu vào Test tay (Sample)', 'Saved to manual samples'),
+      tr('Ví dụ này sẽ được đưa vào bộ test khi tạo và đóng gói.', 'This sample will be included when generating and packaging tests.'),
+      'success'
+    );
   };
 
   // Open Coverage Analysis
@@ -649,6 +741,7 @@ function AppContent() {
             setGeneratedTests={setGeneratedTests}
             runTriggerCount={runTriggerCount}
             onRunningChange={setIsGenerating}
+            onAddSampleToStatement={handleAddSampleToStatement}
           />
         )}
 
@@ -665,6 +758,12 @@ function AppContent() {
             statement={statement}
             onChangeStatement={updateStatement}
             problem={currentProblem}
+            config={config}
+            seed={seed}
+            manualTests={manualTests}
+            generatedTests={generatedTests}
+            onAddManualSample={handleAddSampleToManualTests}
+            onNotify={showToast}
           />
         )}
 

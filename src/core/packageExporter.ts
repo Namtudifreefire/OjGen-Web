@@ -40,6 +40,18 @@ export class ProblemPackageExporter {
         }
       }
 
+      if (sampleIdx === 1 && statement?.samples?.length) {
+        for (const s of statement.samples) {
+          const inp = s.input.replace(/\r\n/g, '\n').replace(/\n+$/, '') + '\n';
+          const out = s.output.replace(/\r\n/g, '\n').replace(/\n+$/, '') + '\n';
+          if (inp.trim()) {
+            sampleFolder.file(`${sampleIdx}.in`, inp);
+            sampleFolder.file(`${sampleIdx}.ans`, out);
+            sampleIdx++;
+          }
+        }
+      }
+
       // problem.yaml
       const yaml = `problem_format_version: '2025-09'
 name: '${statement?.name || problem.title}'
@@ -53,6 +65,9 @@ limits:
 
       // statement
       if (statement) {
+        const samplesMd = statement.samples
+          .map((s, idx) => `### Ví dụ ${idx + 1}\n\n**Input:**\n\`\`\`\n${s.input.trimEnd()}\n\`\`\`\n\n**Output:**\n\`\`\`\n${s.output.trimEnd()}\n\`\`\`\n${s.explanation ? `\n**Giải thích:** ${s.explanation}\n` : ''}`)
+          .join('\n');
         const doc = `# ${statement.name} (${statement.code})
 
 Thời gian chạy: ${(statement.timeLimitMs || 1000) / 1000}s
@@ -69,6 +84,8 @@ ${statement.outputFormat}
 
 ## Ràng buộc
 ${statement.constraints}
+
+${samplesMd ? `## Ví dụ\n${samplesMd}` : ''}
 `;
         zip.folder('problem_statement')!.file('problem.vi.md', doc);
       }
@@ -110,6 +127,9 @@ ${statement.constraints}
       zip.file('provenance.json', JSON.stringify(provenance, null, 2));
 
       if (statement) {
+        const samplesMd = statement.samples
+          .map((s, idx) => `#### Ví dụ ${idx + 1}\n\n**Input:**\n\`\`\`\n${s.input.trimEnd()}\n\`\`\`\n\n**Output:**\n\`\`\`\n${s.output.trimEnd()}\n\`\`\`\n${s.explanation ? `\n**Giải thích:** ${s.explanation}\n` : ''}`)
+          .join('\n');
         const stmtContent = `# ${statement.name} [${statement.code}]
 
 * Thời gian: ${statement.timeLimitMs} ms
@@ -126,6 +146,8 @@ ${statement.outputFormat}
 
 ### Ràng buộc
 ${statement.constraints}
+
+${samplesMd ? `### Ví dụ\n${samplesMd}` : ''}
 `;
         zip.file('statement.md', stmtContent);
       }

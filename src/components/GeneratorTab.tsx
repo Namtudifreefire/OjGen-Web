@@ -17,6 +17,7 @@ import {
   Square,
   Loader2,
   Copy,
+  FilePlus2,
 } from 'lucide-react';
 import { Problem, Config, TestGroupSpec, ManualTestCase, GeneratedTestCase } from '../core/types';
 import { Rng } from '../core/rng';
@@ -53,6 +54,7 @@ interface GeneratorTabProps {
   setGeneratedTests: React.Dispatch<React.SetStateAction<GeneratedTestCase[]>>;
   runTriggerCount?: number;
   onRunningChange?: (running: boolean) => void;
+  onAddSampleToStatement?: (sample: { input: string; output: string }) => void;
 }
 
 export const GeneratorTab: React.FC<GeneratorTabProps> = ({
@@ -77,12 +79,14 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
   setGeneratedTests,
   runTriggerCount = 0,
   onRunningChange,
+  onAddSampleToStatement,
 }) => {
   const { language } = useTranslation();
   const text = (vi: string, en: string) => language === 'en' ? en : vi;
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>(currentProblem.mainCategory);
   const [samplePreview, setSamplePreview] = useState<string>('');
+  const [previewSampleData, setPreviewSampleData] = useState<{ input: string; output: string } | null>(null);
   const [sampleCopied, setSampleCopied] = useState(false);
   const [isFormatOpen, setIsFormatOpen] = useState<boolean>(true);
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -122,6 +126,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
     setProgress(0);
     setGenerationSummary(null);
     setSamplePreview('');
+    setPreviewSampleData(null);
     setSelectedCategory(currentProblem.mainCategory);
   }, [currentProblem.id]);
 
@@ -130,6 +135,7 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
     try {
       const err = currentProblem.validateConfig(config);
       if (err) {
+        setPreviewSampleData(null);
         setSamplePreview(`${text('[LỖI CẤU HÌNH]', '[CONFIGURATION ERROR]')}\n${validationMessage(err, language)}`);
         return;
       }
@@ -139,14 +145,20 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
       const validation = currentProblem.validateInput(sample, config);
       let previewText = sample;
       if (validation) {
+        setPreviewSampleData(null);
         previewText += `\n${text('[CẢNH BÁO XÁC THỰC]', '[VALIDATION WARNING]')}: ${validationMessage(validation, language)}`;
       } else {
         const out = currentProblem.solve(sample, config);
+        setPreviewSampleData({
+          input: sample.replace(/\r\n/g, '\n').replace(/\n+$/, ''),
+          output: out.replace(/\r\n/g, '\n').replace(/\n+$/, ''),
+        });
         previewText += `\n--- ${text('[ĐÁP ÁN CHUẨN SINH RA (.out)]', '[GENERATED REFERENCE OUTPUT (.out)]')} ---\n${out}`;
       }
       setSamplePreview(previewText);
       onAddLog(text(`Đã sinh thử input mẫu thành công cho ${currentProblem.title}`, `Generated a sample for ${problemTitle(currentProblem, language)}.`), 'info');
     } catch (e: any) {
+      setPreviewSampleData(null);
       setSamplePreview(`${text('[LỖI]', '[ERROR]')}: ${e.message}`);
       onAddLog(text(`Lỗi sinh input mẫu: ${e.message}`, `Sample generation failed: ${e.message}`), 'error');
     }
@@ -633,16 +645,28 @@ export const GeneratorTab: React.FC<GeneratorTabProps> = ({
           >
             {samplePreview ? (
               <>
-                <Button variant="secondary" size="sm" leftIcon={<Copy className="w-3.5 h-3.5" />} onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(samplePreview);
-                    setSampleCopied(true);
-                  } catch {
-                    onAddLog(text('Không thể sao chép nội dung mẫu.', 'Could not copy the sample.'), 'error');
-                  }
-                }}>
-                  {sampleCopied ? text('Đã sao chép', 'Copied') : text('Sao chép', 'Copy')}
-                </Button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--spacing-2)' }}>
+                  <Button variant="secondary" size="sm" leftIcon={<Copy className="w-3.5 h-3.5" />} onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(samplePreview);
+                      setSampleCopied(true);
+                    } catch {
+                      onAddLog(text('Không thể sao chép nội dung mẫu.', 'Could not copy the sample.'), 'error');
+                    }
+                  }}>
+                    {sampleCopied ? text('Đã sao chép', 'Copied') : text('Sao chép', 'Copy')}
+                  </Button>
+                  {previewSampleData && onAddSampleToStatement && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      leftIcon={<FilePlus2 className="w-3.5 h-3.5" />}
+                      onClick={() => onAddSampleToStatement(previewSampleData)}
+                    >
+                      {text('Đưa vào ví dụ đề bài', 'Add to statement samples')}
+                    </Button>
+                  )}
+                </div>
                 <pre style={{ margin: 'var(--spacing-2) 0 0', whiteSpace: 'pre-wrap' }}>{samplePreview}</pre>
               </>
             ) : (
